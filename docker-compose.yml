@@ -1,4 +1,13 @@
-#version: '3.8'
+# CyberFit Backend — Docker Compose
+#
+# Prerequisites:
+#   1. Copy .env.example → .env and fill in real values.
+#   2. Never commit .env to version control.
+#
+# Usage:
+#   docker compose up --build        # first run
+#   docker compose up -d             # subsequent runs (detached)
+#   docker compose down              # stop and remove containers
 
 name: pfi-platform
 
@@ -9,11 +18,19 @@ services:
     ports:
       - "8000:8000"
     volumes:
+      # Persist the DuckDB database file between container restarts.
       - ./data:/app/data
-      - ./app/static:/app/app/static:ro
+    env_file:
+      # All secrets and configuration are loaded from .env.
+      # See .env.example for the full list of required variables.
+      - .env
     environment:
-      - DATABASE_URL=duckdb:///./data/pfi.db
-      - SECRET_KEY=pfi-platform-secret-key-change-in-production
-      - ALLOW_ADMIN_SEED=true
+      # Override PYTHONUNBUFFERED so logs appear immediately in docker logs.
       - PYTHONUNBUFFERED=1
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

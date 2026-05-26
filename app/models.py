@@ -1,7 +1,16 @@
 from sqlalchemy import Column, Integer, String, Float, Date, DateTime, Text, ForeignKey, Sequence, Boolean
 from sqlalchemy.orm import relationship
 from app.database import Base
-from datetime import datetime
+from datetime import datetime, timezone
+
+
+def _utcnow() -> datetime:
+    """Return current UTC time as a timezone-aware datetime.
+
+    Used as a SQLAlchemy column default in place of the deprecated
+    ``datetime.utcnow``.
+    """
+    return datetime.now(tz=timezone.utc)
 
 
 def id_column(table_name: str):
@@ -14,7 +23,7 @@ class Admin(Base):
     email = Column(String, unique=True, index=True)
     password = Column(String)
     name = Column(String)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=_utcnow)
 
 class Member(Base):
     __tablename__ = "members"
@@ -32,7 +41,7 @@ class Member(Base):
     location = Column(String, nullable=True)
     preferred_training_time = Column(String, nullable=True)
     status = Column(String, default="Active")
-    registration_date = Column(DateTime, default=datetime.utcnow)
+    registration_date = Column(DateTime, default=_utcnow)
     primary_goal = Column(String)
     fitness_level = Column(String)
     risk_level = Column(String, default="Low")
@@ -40,8 +49,8 @@ class Member(Base):
     medical_disclaimer_accepted = Column(Boolean, default=False)
     marketing_consent = Column(Boolean, default=False)
     consent_signed_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=_utcnow)
+    updated_at = Column(DateTime, default=_utcnow, onupdate=_utcnow)
 
     physical_metrics = relationship("MemberPhysicalMetrics", back_populates="member", uselist=False, cascade="all, delete-orphan")
     health_profile = relationship("MemberHealthProfile", back_populates="member", uselist=False, cascade="all, delete-orphan")
@@ -67,7 +76,7 @@ class MemberPhysicalMetrics(Base):
     blood_pressure = Column(String, nullable=True)
     mobility_score = Column(Integer, nullable=True)
     fitness_level = Column(String)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=_utcnow)
     member = relationship("Member", back_populates="physical_metrics")
 
 class MemberHealthProfile(Base):
@@ -144,7 +153,7 @@ class Assessment(Base):
     strength_score = Column(String, nullable=True)
     cardio_score = Column(String, nullable=True)
     overall_notes = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=_utcnow)
     member = relationship("Member", back_populates="assessments")
 
 class ProgressEntry(Base):
@@ -158,7 +167,7 @@ class ProgressEntry(Base):
     progress_note = Column(Text, nullable=True)
     coach_note = Column(Text, nullable=True)
     adherence_score = Column(Integer, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=_utcnow)
     member = relationship("Member", back_populates="progress_entries")
 
 class WorkoutPlan(Base):
@@ -174,7 +183,7 @@ class WorkoutPlan(Base):
     injury_considerations = Column(Text, nullable=True)
     notes = Column(Text, nullable=True)
     status = Column(String, default="Draft")
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=_utcnow)
     member = relationship("Member", back_populates="workout_plans")
 
 class NutritionPlan(Base):
@@ -189,7 +198,7 @@ class NutritionPlan(Base):
     hydration_target = Column(Float, nullable=True)
     coach_notes = Column(Text, nullable=True)
     status = Column(String, default="Draft")
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=_utcnow)
     member = relationship("Member", back_populates="nutrition_plans")
 
 class SupplementPlan(Base):
@@ -202,5 +211,5 @@ class SupplementPlan(Base):
     notes = Column(Text, nullable=True)
     safety_notes = Column(Text, nullable=True)
     status = Column(String, default="Draft")
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=_utcnow)
     member = relationship("Member", back_populates="supplement_plans")

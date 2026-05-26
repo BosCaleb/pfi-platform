@@ -1,0 +1,66 @@
+# === Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# === Virtual environments ===
+.venv/
+.venv312/
+venv/
+env/
+ENV/
+
+# === Environment / secrets ===
+.env
+.env.local
+.env.*.local
+*.secret
+
+# === Database files ===
+*.db
+*.db.wal
+*.duckdb
+*.sqlite
+*.sqlite3
+data/
+
+# === Pytest / coverage ===
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+*.coveragerc
+
+# === Ruff / Black ===
+.ruff_cache/
+
+# === Node / Frontend ===
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+node_modules/
+dist/
+
+# === IDE / editor ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# === Docker ===
+.dockerignore
+
+# === Misc ===
+*.log
+*.tmp
+.sixth/

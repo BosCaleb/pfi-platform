@@ -8,3 +8,5 @@ __pycache__/
 *.db.wal
 *.duckdb
 data/
+frontend/node_modules/
+frontend/dist/

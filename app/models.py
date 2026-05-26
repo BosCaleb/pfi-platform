@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, Date, DateTime, Text, ForeignKey, Sequence
+from sqlalchemy import Column, Integer, String, Float, Date, DateTime, Text, ForeignKey, Sequence, Boolean
 from sqlalchemy.orm import relationship
 from app.database import Base
 from datetime import datetime
@@ -36,6 +36,10 @@ class Member(Base):
     primary_goal = Column(String)
     fitness_level = Column(String)
     risk_level = Column(String, default="Low")
+    privacy_consent = Column(Boolean, default=False)
+    medical_disclaimer_accepted = Column(Boolean, default=False)
+    marketing_consent = Column(Boolean, default=False)
+    consent_signed_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

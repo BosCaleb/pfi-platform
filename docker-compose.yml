@@ -14,5 +14,6 @@ services:
     environment:
       - DATABASE_URL=duckdb:///./data/pfi.db
       - SECRET_KEY=pfi-platform-secret-key-change-in-production
+      - ALLOW_ADMIN_SEED=true
       - PYTHONUNBUFFERED=1
     restart: unless-stopped

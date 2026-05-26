@@ -14,12 +14,103 @@
       </div>
       <div class="session">
         <span id="sessionLabel">Signed out</span>
+        <button id="homeBtn" class="ghost" type="button">Home</button>
+        <button id="adminLoginBtn" class="secondary" type="button">Admin Login</button>
         <button id="logoutBtn" class="ghost" type="button">Sign out</button>
       </div>
     </header>
 
     <main>
-      <section id="loginView" class="auth-shell">
+      <section id="landingView" class="landing-shell">
+        <section class="hero">
+          <div class="hero-copy">
+            <p class="eyebrow">Sports Intelligence OS</p>
+            <h2>Train Smarter. Perform Better. Become Your Strongest Self.</h2>
+            <p class="hero-subtext">A futuristic coaching platform for personalized training, nutrition, supplementation and progress intelligence.</p>
+            <div class="hero-actions">
+              <button id="landingRegisterBtn" type="button">Register as Member</button>
+              <button id="landingLoginBtn" class="secondary" type="button">Admin Login</button>
+            </div>
+          </div>
+          <div class="performance-panel">
+            <div class="scanline"></div>
+            <div class="panel-header">
+              <span>PFI Live Profile</span>
+              <strong>INTELLIGENCE READY</strong>
+            </div>
+            <div class="hero-metrics">
+              <div class="metric-card cyan">
+                <span>Strength Index</span>
+                <strong>84</strong>
+              </div>
+              <div class="metric-card purple">
+                <span>Recovery Score</span>
+                <strong>72</strong>
+              </div>
+              <div class="metric-card lime">
+                <span>Mobility Score</span>
+                <strong>91</strong>
+              </div>
+              <div class="metric-card blue">
+                <span>Goal Progress</span>
+                <strong>63%</strong>
+              </div>
+            </div>
+            <div class="signal-bars" aria-hidden="true">
+              <span style="height: 48%"></span>
+              <span style="height: 72%"></span>
+              <span style="height: 58%"></span>
+              <span style="height: 86%"></span>
+              <span style="height: 64%"></span>
+              <span style="height: 92%"></span>
+              <span style="height: 70%"></span>
+            </div>
+          </div>
+        </section>
+
+        <section class="feature-grid">
+          <article class="panel glow-card">
+            <h3>Personalized Member Profiles</h3>
+            <p>Capture the full performance picture: goals, health context, lifestyle, motivation and baseline capacity.</p>
+          </article>
+          <article class="panel glow-card">
+            <h3>Smart Workout Planning</h3>
+            <p>Prepare every member profile for goal-based training plans and future adaptive recommendations.</p>
+          </article>
+          <article class="panel glow-card">
+            <h3>Nutrition & Supplement Guidance</h3>
+            <p>Structure plan placeholders so coaches can configure targets, notes, restrictions and safety context.</p>
+          </article>
+          <article class="panel glow-card">
+            <h3>Progress Intelligence</h3>
+            <p>Track measurements, adherence, reassessments and coaching notes from one command centre.</p>
+          </article>
+        </section>
+
+        <section class="how-grid">
+          <div class="section-title">
+            <h2>How PFI Profiles Members</h2>
+            <span>Register, assess, personalize, adapt</span>
+          </div>
+          <div class="steps">
+            <div><span>01</span><strong>Register</strong></div>
+            <div><span>02</span><strong>Complete Assessment</strong></div>
+            <div><span>03</span><strong>Get Profiled</strong></div>
+            <div><span>04</span><strong>Receive Plans</strong></div>
+            <div><span>05</span><strong>Track Progress</strong></div>
+            <div><span>06</span><strong>Adapt Over Time</strong></div>
+          </div>
+        </section>
+
+        <footer class="landing-footer">
+          <span>Gym name placeholder</span>
+          <span>Contact details placeholder</span>
+          <span>Privacy</span>
+          <span>Disclaimer</span>
+        </footer>
+      </section>
+
+      <section id="loginView" class="auth-shell hidden">
         <form id="loginForm" class="panel auth-panel">
           <div class="section-title">
             <h2>Staff Login</h2>
@@ -45,6 +136,7 @@
           <button class="tab" data-tab="intake" type="button">Member Intake</button>
           <button class="tab" data-tab="members" type="button">Members</button>
           <button class="tab" data-tab="tracking" type="button">Tracking</button>
+          <button class="tab" data-tab="settings" type="button">Settings</button>
         </nav>
 
         <section id="dashboard" class="tab-panel active">
@@ -70,8 +162,9 @@
             <h2>New Member Intake</h2>
             <span>Profile, goals, baseline, coaching fit</span>
           </div>
+          <div id="wizardProgress" class="wizard-progress"></div>
           <form id="memberForm" class="intake-grid">
-            <fieldset>
+            <fieldset class="wizard-step active" data-step="0">
               <legend>Identity</legend>
               <label>First name<input name="personal.first_name" required></label>
               <label>Last name<input name="personal.last_name" required></label>
@@ -110,7 +203,7 @@
               <label>Emergency phone<input name="personal.emergency_contact_phone" required></label>
             </fieldset>
 
-            <fieldset>
+            <fieldset class="wizard-step" data-step="1">
               <legend>Physical</legend>
               <label>Height cm<input name="physical.height" type="number" min="80" max="260" step="0.1" required></label>
               <label>Weight kg<input name="physical.weight" type="number" min="20" max="350" step="0.1" required></label>
@@ -143,8 +236,9 @@
               </label>
             </fieldset>
 
-            <fieldset>
+            <fieldset class="wizard-step" data-step="2">
               <legend>Health</legend>
+              <p class="form-note wide">PFI Platform does not replace medical advice. High-risk members should seek medical clearance before intense exercise.</p>
               <label>Injuries<textarea name="health.injuries"></textarea></label>
               <label>Pain areas<textarea name="health.pain_areas"></textarea></label>
               <label>Previous surgeries<textarea name="health.previous_surgeries"></textarea></label>
@@ -172,7 +266,10 @@
               <label class="wide">Health notes<textarea name="health.notes"></textarea></label>
             </fieldset>
 
-            <fieldset>
+              <label class="check-row wide"><input name="consent.medical_disclaimer_accepted" type="checkbox" required> Medical disclaimer accepted</label>
+            </fieldset>
+
+            <fieldset class="wizard-step" data-step="3">
               <legend>Lifestyle</legend>
               <label>Sleep hours<input name="lifestyle.sleep_hours" type="number" min="0" max="16" step="0.5"></label>
               <label>Stress level
@@ -208,7 +305,7 @@
               <label class="wide">Nutrition habits<textarea name="lifestyle.nutrition_habits"></textarea></label>
             </fieldset>
 
-            <fieldset>
+            <fieldset class="wizard-step" data-step="4">
               <legend>Goals</legend>
               <label>Primary goal
                 <select name="goals.primary_goal" required>
@@ -231,7 +328,7 @@
               <label class="wide">Coach notes<textarea name="goals.coach_notes"></textarea></label>
             </fieldset>
 
-            <fieldset>
+            <fieldset class="wizard-step" data-step="5">
               <legend>Coaching Fit</legend>
               <label>Motivation type
                 <select name="behavior.motivation_type" required>
@@ -271,7 +368,7 @@
               <label>Notifications<input name="behavior.notification_frequency" placeholder="Weekly"></label>
             </fieldset>
 
-            <fieldset>
+            <fieldset class="wizard-step" data-step="6">
               <legend>Baseline</legend>
               <label>Assessment date<input name="assessment.assessment_date" type="date" required></label>
               <label>Pushups<input name="assessment.pushups" type="number" min="0"></label>
@@ -282,10 +379,16 @@
               <label>Shoulder mobility<input name="assessment.shoulder_mobility"></label>
               <label>Balance test<input name="assessment.balance_test"></label>
               <label class="wide">Overall notes<textarea name="assessment.overall_notes"></textarea></label>
+              <p class="form-note wide">Member data is private and visible only to authorized admins. Consent is required to store and use the profile for coaching and personalization.</p>
+              <label class="check-row wide"><input name="consent.privacy_consent" type="checkbox" required> Privacy notice and member data consent accepted</label>
+              <label class="check-row wide"><input name="consent.marketing_consent" type="checkbox"> Optional communication and program update consent</label>
             </fieldset>
 
             <div class="form-actions wide-actions">
-              <button type="submit">Save member profile</button>
+              <button id="prevStepBtn" class="secondary" type="button">Previous</button>
+              <button id="nextStepBtn" type="button">Next</button>
+              <button id="submitMemberBtn" type="submit">Save member profile</button>
+              <button id="cancelEditBtn" class="secondary hidden" type="button">Cancel edit</button>
               <button id="resetIntakeBtn" class="secondary" type="button">Clear form</button>
               <span id="memberMessage" class="message"></span>
             </div>
@@ -302,6 +405,7 @@
             <label>Goal<select id="goalFilter"><option value="">All goals</option></select></label>
             <label>Level<select id="levelFilter"><option value="">All levels</option></select></label>
             <label>Risk<select id="riskFilter"><option value="">All risks</option></select></label>
+            <label>Status<select id="statusFilter"><option value="">All statuses</option></select></label>
           </div>
           <div class="directory">
             <div class="panel table-shell">
@@ -399,6 +503,14 @@
             </form>
           </div>
           <p id="trackingMessage" class="message"></p>
+        </section>
+
+        <section id="settings" class="tab-panel">
+          <div class="section-title">
+            <h2>Settings</h2>
+            <button id="refreshSettingsBtn" class="secondary" type="button">Refresh</button>
+          </div>
+          <div id="settingsPanel" class="settings-grid"></div>
         </section>
       </section>
     </main>

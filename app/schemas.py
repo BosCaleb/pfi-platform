@@ -85,6 +85,11 @@ class BaselineAssessment(BaseModel):
     overall_notes: Optional[str] = None
     assessment_date: date
 
+class ConsentInfo(BaseModel):
+    privacy_consent: bool
+    medical_disclaimer_accepted: bool
+    marketing_consent: bool = False
+
 class MemberRegistration(BaseModel):
     personal: PersonalInfo
     physical: PhysicalMetrics
@@ -93,6 +98,7 @@ class MemberRegistration(BaseModel):
     goals: GoalProfile
     behavior: BehaviorProfile
     assessment: BaselineAssessment
+    consent: ConsentInfo
 
 class MemberOut(BaseModel):
     id: int
@@ -323,6 +329,10 @@ class MemberDetailOut(BaseModel):
     primary_goal: Optional[str] = None
     fitness_level: Optional[str] = None
     risk_level: Optional[str] = None
+    privacy_consent: Optional[bool] = None
+    medical_disclaimer_accepted: Optional[bool] = None
+    marketing_consent: Optional[bool] = None
+    consent_signed_at: Optional[datetime] = None
     physical_metrics: Optional[MemberPhysicalOut] = None
     health_profile: Optional[MemberHealthOut] = None
     lifestyle_profile: Optional[MemberLifestyleOut] = None

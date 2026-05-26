@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app import models, schemas, auth, database
+from app.config import admin_seed_enabled
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 DEFAULT_ADMIN_EMAIL = "admin@pfi-platform.local"
@@ -16,6 +17,8 @@ def login(credentials: schemas.LoginRequest, db: Session = Depends(database.get_
 
 @router.post("/seed")
 def seed_admin(db: Session = Depends(database.get_db)):
+    if not admin_seed_enabled():
+        raise HTTPException(status_code=403, detail="Default admin creation is disabled")
     admin = db.query(models.Admin).filter(models.Admin.email == DEFAULT_ADMIN_EMAIL).first()
     if not admin:
         admin = models.Admin(

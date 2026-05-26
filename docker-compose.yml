@@ -1,14 +1,18 @@
 #version: '3.8'
 
+name: pfi-platform
+
 services:
-  cyberfit-api:
+  pfi-api:
     build: .
-    container_name: cyberfit-api
+    container_name: pfi-api
     ports:
       - "8000:8000"
     volumes:
       - ./data:/app/data
+      - ./app/static:/app/app/static:ro
     environment:
-      - DATABASE_URL=duckdb:///./data/cyberfit.db
-      - SECRET_KEY=cyberfit-secret-key-change-in-production
+      - DATABASE_URL=duckdb:///./data/pfi.db
+      - SECRET_KEY=pfi-platform-secret-key-change-in-production
+      - PYTHONUNBUFFERED=1
     restart: unless-stopped

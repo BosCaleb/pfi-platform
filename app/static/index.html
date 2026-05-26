@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PFI Platform</title>
+    <link rel="stylesheet" href="/ui/styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Personalized Fitness Intelligence Platform</p>
+        <h1>PFI Platform</h1>
+      </div>
+      <div class="session">
+        <span id="sessionLabel">Signed out</span>
+        <button id="logoutBtn" class="ghost" type="button">Sign out</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="loginView" class="auth-shell">
+        <form id="loginForm" class="panel auth-panel">
+          <div class="section-title">
+            <h2>Staff Login</h2>
+            <span>Admin access</span>
+          </div>
+          <label>Email
+            <input name="email" type="email" value="admin@pfi-platform.local" autocomplete="username" required>
+          </label>
+          <label>Password
+            <input name="password" type="password" value="admin123" autocomplete="current-password" required>
+          </label>
+          <div class="form-actions">
+            <button type="submit">Sign in</button>
+            <button id="seedBtn" class="secondary" type="button">Create default admin</button>
+          </div>
+          <p id="loginMessage" class="message"></p>
+        </form>
+      </section>
+
+      <section id="appView" class="workspace hidden">
+        <nav class="tabs" aria-label="Workspace sections">
+          <button class="tab active" data-tab="dashboard" type="button">Dashboard</button>
+          <button class="tab" data-tab="intake" type="button">Member Intake</button>
+          <button class="tab" data-tab="members" type="button">Members</button>
+          <button class="tab" data-tab="tracking" type="button">Tracking</button>
+        </nav>
+
+        <section id="dashboard" class="tab-panel active">
+          <div class="section-title">
+              <h2>PFI Command Snapshot</h2>
+            <button id="refreshDashboardBtn" class="secondary" type="button">Refresh</button>
+          </div>
+          <div id="statsGrid" class="stats-grid"></div>
+          <div class="two-column">
+            <section class="panel">
+              <h3>Recent Members</h3>
+              <div id="recentMembers" class="list"></div>
+            </section>
+            <section class="panel">
+              <h3>Reassessments Due</h3>
+              <div id="reassessmentList" class="list"></div>
+            </section>
+          </div>
+        </section>
+
+        <section id="intake" class="tab-panel">
+          <div class="section-title">
+            <h2>New Member Intake</h2>
+            <span>Profile, goals, baseline, coaching fit</span>
+          </div>
+          <form id="memberForm" class="intake-grid">
+            <fieldset>
+              <legend>Identity</legend>
+              <label>First name<input name="personal.first_name" required></label>
+              <label>Last name<input name="personal.last_name" required></label>
+              <label>Email<input name="personal.email" type="email" required></label>
+              <label>Phone<input name="personal.phone" required></label>
+              <label>Date of birth<input name="personal.date_of_birth" type="date" required></label>
+              <label>Gender
+                <select name="personal.gender">
+                  <option value="">Select</option>
+                  <option>Female</option>
+                  <option>Male</option>
+                  <option>Non-binary</option>
+                  <option>Prefer not to say</option>
+                </select>
+              </label>
+              <label>Status
+                <select name="personal.status">
+                  <option>Active</option>
+                  <option>Lead</option>
+                  <option>Paused</option>
+                </select>
+              </label>
+              <label>Occupation<input name="personal.occupation"></label>
+              <label>Location<input name="personal.location"></label>
+              <label>Preferred training time
+                <select name="personal.preferred_training_time">
+                  <option value="">Select</option>
+                  <option>Early morning</option>
+                  <option>Morning</option>
+                  <option>Lunch</option>
+                  <option>Afternoon</option>
+                  <option>Evening</option>
+                </select>
+              </label>
+              <label>Emergency contact<input name="personal.emergency_contact_name" required></label>
+              <label>Emergency phone<input name="personal.emergency_contact_phone" required></label>
+            </fieldset>
+
+            <fieldset>
+              <legend>Physical</legend>
+              <label>Height cm<input name="physical.height" type="number" min="80" max="260" step="0.1" required></label>
+              <label>Weight kg<input name="physical.weight" type="number" min="20" max="350" step="0.1" required></label>
+              <label>Body fat %<input name="physical.body_fat_percentage" type="number" min="0" max="80" step="0.1"></label>
+              <label>Waist cm<input name="physical.waist_measurement" type="number" min="20" max="250" step="0.1"></label>
+              <label>Resting HR<input name="physical.resting_heart_rate" type="number" min="30" max="220"></label>
+              <label>Blood pressure<input name="physical.blood_pressure" placeholder="120/80"></label>
+              <label>Mobility score
+                <select name="physical.mobility_score">
+                  <option value="">Select</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="6">6</option>
+                  <option value="7">7</option>
+                  <option value="8">8</option>
+                  <option value="9">9</option>
+                  <option value="10">10</option>
+                </select>
+              </label>
+              <label>Fitness level
+                <select name="physical.fitness_level" required>
+                  <option>Beginner</option>
+                  <option>Intermediate</option>
+                  <option>Advanced</option>
+                  <option>Athlete</option>
+                </select>
+              </label>
+            </fieldset>
+
+            <fieldset>
+              <legend>Health</legend>
+              <label>Injuries<textarea name="health.injuries"></textarea></label>
+              <label>Pain areas<textarea name="health.pain_areas"></textarea></label>
+              <label>Previous surgeries<textarea name="health.previous_surgeries"></textarea></label>
+              <label>Chronic conditions<textarea name="health.chronic_conditions"></textarea></label>
+              <label>Medications<textarea name="health.medications"></textarea></label>
+              <label>Medical clearance required
+                <select name="health.medical_clearance_required">
+                  <option>No</option>
+                  <option>Yes</option>
+                </select>
+              </label>
+              <label>Clearance received
+                <select name="health.medical_clearance_received">
+                  <option>No</option>
+                  <option>Yes</option>
+                </select>
+              </label>
+              <label>Risk level
+                <select name="health.risk_level">
+                  <option>Low</option>
+                  <option>Medium</option>
+                  <option>High</option>
+                </select>
+              </label>
+              <label class="wide">Health notes<textarea name="health.notes"></textarea></label>
+            </fieldset>
+
+            <fieldset>
+              <legend>Lifestyle</legend>
+              <label>Sleep hours<input name="lifestyle.sleep_hours" type="number" min="0" max="16" step="0.5"></label>
+              <label>Stress level
+                <select name="lifestyle.stress_level">
+                  <option value="">Select</option>
+                  <option>Low</option>
+                  <option>Medium</option>
+                  <option>High</option>
+                </select>
+              </label>
+              <label>Activity level
+                <select name="lifestyle.activity_level">
+                  <option value="">Select</option>
+                  <option>Sedentary</option>
+                  <option>Lightly Active</option>
+                  <option>Active</option>
+                  <option>Very Active</option>
+                </select>
+              </label>
+              <label>Work schedule<input name="lifestyle.work_schedule"></label>
+              <label>Travel frequency<input name="lifestyle.travel_frequency"></label>
+              <label>Water litres<input name="lifestyle.water_intake" type="number" min="0" max="12" step="0.1"></label>
+              <label>Smoking<input name="lifestyle.smoking"></label>
+              <label>Alcohol<input name="lifestyle.alcohol"></label>
+              <label>Recovery capacity
+                <select name="lifestyle.recovery_capacity">
+                  <option value="">Select</option>
+                  <option>Low</option>
+                  <option>Medium</option>
+                  <option>High</option>
+                </select>
+              </label>
+              <label class="wide">Nutrition habits<textarea name="lifestyle.nutrition_habits"></textarea></label>
+            </fieldset>
+
+            <fieldset>
+              <legend>Goals</legend>
+              <label>Primary goal
+                <select name="goals.primary_goal" required>
+                  <option>Fat Loss</option>
+                  <option>Muscle Gain</option>
+                  <option>Strength</option>
+                  <option>Fitness</option>
+                  <option>Mobility</option>
+                  <option>Rehabilitation</option>
+                  <option>Performance</option>
+                </select>
+              </label>
+              <label>Secondary goals<input name="goals.secondary_goals" placeholder="Strength, Mobility"></label>
+              <label>Fat loss %<input name="goals.fat_loss_pct" type="number" min="0" max="100" value="0"></label>
+              <label>Strength %<input name="goals.strength_pct" type="number" min="0" max="100" value="0"></label>
+              <label>Mobility %<input name="goals.mobility_pct" type="number" min="0" max="100" value="0"></label>
+              <label>Performance %<input name="goals.performance_pct" type="number" min="0" max="100" value="0"></label>
+              <label>Target weight<input name="goals.target_weight" type="number" min="20" max="350" step="0.1"></label>
+              <label>Target date<input name="goals.target_date" type="date"></label>
+              <label class="wide">Coach notes<textarea name="goals.coach_notes"></textarea></label>
+            </fieldset>
+
+            <fieldset>
+              <legend>Coaching Fit</legend>
+              <label>Motivation type
+                <select name="behavior.motivation_type" required>
+                  <option>Self-motivated</option>
+                  <option>Accountability-driven</option>
+                  <option>Competition-driven</option>
+                  <option>Coaching-driven</option>
+                </select>
+              </label>
+              <label>Coaching style
+                <select name="behavior.coaching_style" required>
+                  <option>Gentle</option>
+                  <option>Direct</option>
+                  <option>Technical</option>
+                  <option>High-energy</option>
+                </select>
+              </label>
+              <label>Workout preference
+                <select name="behavior.workout_preference">
+                  <option value="">Select</option>
+                  <option>Machines</option>
+                  <option>Free weights</option>
+                  <option>Classes</option>
+                  <option>Cardio</option>
+                  <option>Functional</option>
+                  <option>Home</option>
+                </select>
+              </label>
+              <label>Training days/week<input name="behavior.training_frequency" type="number" min="0" max="14"></label>
+              <label>Session minutes<input name="behavior.session_duration" type="number" min="10" max="240"></label>
+              <label>Gamification
+                <select name="behavior.gamification">
+                  <option>No</option>
+                  <option>Yes</option>
+                </select>
+              </label>
+              <label>Notifications<input name="behavior.notification_frequency" placeholder="Weekly"></label>
+            </fieldset>
+
+            <fieldset>
+              <legend>Baseline</legend>
+              <label>Assessment date<input name="assessment.assessment_date" type="date" required></label>
+              <label>Pushups<input name="assessment.pushups" type="number" min="0"></label>
+              <label>Squats<input name="assessment.squats" type="number" min="0"></label>
+              <label>Plank seconds<input name="assessment.plank_seconds" type="number" min="0"></label>
+              <label>Cardio result<input name="assessment.cardio_result" placeholder="05:30"></label>
+              <label>Hamstring flexibility<input name="assessment.hamstring_flexibility"></label>
+              <label>Shoulder mobility<input name="assessment.shoulder_mobility"></label>
+              <label>Balance test<input name="assessment.balance_test"></label>
+              <label class="wide">Overall notes<textarea name="assessment.overall_notes"></textarea></label>
+            </fieldset>
+
+            <div class="form-actions wide-actions">
+              <button type="submit">Save member profile</button>
+              <button id="resetIntakeBtn" class="secondary" type="button">Clear form</button>
+              <span id="memberMessage" class="message"></span>
+            </div>
+          </form>
+        </section>
+
+        <section id="members" class="tab-panel">
+          <div class="section-title">
+            <h2>Member Directory</h2>
+            <button id="refreshMembersBtn" class="secondary" type="button">Refresh</button>
+          </div>
+          <div class="filters">
+            <label>Search<input id="memberSearch" placeholder="Name, email, goal"></label>
+            <label>Goal<select id="goalFilter"><option value="">All goals</option></select></label>
+            <label>Level<select id="levelFilter"><option value="">All levels</option></select></label>
+            <label>Risk<select id="riskFilter"><option value="">All risks</option></select></label>
+          </div>
+          <div class="directory">
+            <div class="panel table-shell">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Goal</th>
+                    <th>Level</th>
+                    <th>Risk</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="membersTable"></tbody>
+              </table>
+            </div>
+            <aside id="memberDetail" class="panel detail-panel">
+              <h3>Select a member</h3>
+            </aside>
+          </div>
+        </section>
+
+        <section id="tracking" class="tab-panel">
+          <div class="section-title">
+            <h2>Tracking & Plans</h2>
+            <button id="refreshTrackingMembersBtn" class="secondary" type="button">Refresh members</button>
+          </div>
+          <div class="tracking-grid">
+            <form id="assessmentForm" class="panel quick-form">
+              <h3>Assessment</h3>
+              <label>Member<select name="member_id" class="member-select" required></select></label>
+              <label>Date<input name="assessment_date" type="date" required></label>
+              <label>Pushups<input name="pushups" type="number" min="0"></label>
+              <label>Squats<input name="squats" type="number" min="0"></label>
+              <label>Plank seconds<input name="plank_seconds" type="number" min="0"></label>
+              <label>Cardio result<input name="cardio_result" placeholder="05:30"></label>
+              <label>Mobility score<input name="mobility_score"></label>
+              <label>Balance score<input name="balance_score"></label>
+              <label class="wide">Notes<textarea name="overall_notes"></textarea></label>
+              <button type="submit">Save assessment</button>
+            </form>
+
+            <form id="progressForm" class="panel quick-form">
+              <h3>Progress</h3>
+              <label>Member<select name="member_id" class="member-select" required></select></label>
+              <label>Date<input name="date" type="date" required></label>
+              <label>Weight kg<input name="weight" type="number" min="20" max="350" step="0.1"></label>
+              <label>Waist cm<input name="waist_measurement" type="number" min="20" max="250" step="0.1"></label>
+              <label>Body fat %<input name="body_fat_percentage" type="number" min="0" max="80" step="0.1"></label>
+              <label>Adherence<input name="adherence_score" type="number" min="0" max="100"></label>
+              <label class="wide">Progress note<textarea name="progress_note"></textarea></label>
+              <label class="wide">Coach note<textarea name="coach_note"></textarea></label>
+              <button type="submit">Save progress</button>
+            </form>
+
+            <form id="workoutForm" class="panel quick-form">
+              <h3>Workout Plan</h3>
+              <label>Member<select name="member_id" class="member-select" required></select></label>
+              <label>Plan name<input name="plan_name" required></label>
+              <label>Goal type<input name="goal_type"></label>
+              <label>Weekly frequency<input name="weekly_frequency" type="number" min="1" max="14"></label>
+              <label>Session minutes<input name="session_duration" type="number" min="10" max="240"></label>
+              <label>Intensity<input name="intensity_level"></label>
+              <label>Equipment<input name="equipment"></label>
+              <label>Status<select name="status"><option>Draft</option><option>Active</option><option>Completed</option></select></label>
+              <label class="wide">Injury considerations<textarea name="injury_considerations"></textarea></label>
+              <label class="wide">Notes<textarea name="notes"></textarea></label>
+              <button type="submit">Save workout</button>
+            </form>
+
+            <form id="nutritionForm" class="panel quick-form">
+              <h3>Nutrition Plan</h3>
+              <label>Member<select name="member_id" class="member-select" required></select></label>
+              <label>Goal<input name="nutrition_goal"></label>
+              <label>Calories<input name="calories_target" type="number" min="0"></label>
+              <label>Protein g<input name="protein_target" type="number" min="0"></label>
+              <label>Hydration litres<input name="hydration_target" type="number" min="0" step="0.1"></label>
+              <label>Restrictions<input name="dietary_restrictions"></label>
+              <label>Status<select name="status"><option>Draft</option><option>Active</option><option>Completed</option></select></label>
+              <label class="wide">Meal preference<textarea name="meal_preference"></textarea></label>
+              <label class="wide">Coach notes<textarea name="coach_notes"></textarea></label>
+              <button type="submit">Save nutrition</button>
+            </form>
+
+            <form id="supplementForm" class="panel quick-form">
+              <h3>Supplement Plan</h3>
+              <label>Member<select name="member_id" class="member-select" required></select></label>
+              <label>Supplement<input name="supplement_name" required></label>
+              <label>Purpose<input name="purpose"></label>
+              <label>Timing<input name="suggested_timing"></label>
+              <label>Status<select name="status"><option>Draft</option><option>Active</option><option>Stopped</option></select></label>
+              <label class="wide">Notes<textarea name="notes"></textarea></label>
+              <label class="wide">Safety notes<textarea name="safety_notes"></textarea></label>
+              <button type="submit">Save supplement</button>
+            </form>
+          </div>
+          <p id="trackingMessage" class="message"></p>
+        </section>
+      </section>
+    </main>
+
+    <script src="/ui/app.js"></script>
+  </body>
+</html>

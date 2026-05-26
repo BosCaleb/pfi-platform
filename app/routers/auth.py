@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from app import models, schemas, auth, database
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
+DEFAULT_ADMIN_EMAIL = "admin@pfi-platform.local"
+DEFAULT_ADMIN_PASSWORD = "admin123"
 
 @router.post("/login")
 def login(credentials: schemas.LoginRequest, db: Session = Depends(database.get_db)):
@@ -14,11 +16,12 @@ def login(credentials: schemas.LoginRequest, db: Session = Depends(database.get_
 
 @router.post("/seed")
 def seed_admin(db: Session = Depends(database.get_db)):
-    if not db.query(models.Admin).first():
+    admin = db.query(models.Admin).filter(models.Admin.email == DEFAULT_ADMIN_EMAIL).first()
+    if not admin:
         admin = models.Admin(
-            email="admin@cyberfit.com",
-            password=auth.get_password_hash("admin123"),
-            name="System Admin"
+            email=DEFAULT_ADMIN_EMAIL,
+            password=auth.get_password_hash(DEFAULT_ADMIN_PASSWORD),
+            name="PFI Platform Admin"
         )
         db.add(admin)
         db.commit()

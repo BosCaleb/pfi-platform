@@ -1,11 +1,16 @@
-from sqlalchemy import Column, Integer, String, Float, Date, DateTime, Text, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, Date, DateTime, Text, ForeignKey, Sequence
 from sqlalchemy.orm import relationship
 from app.database import Base
 from datetime import datetime
 
+
+def id_column(table_name: str):
+    return Column(Integer, Sequence(f"{table_name}_id_seq"), primary_key=True, index=True)
+
+
 class Admin(Base):
     __tablename__ = "admins"
-    id = Column(Integer, primary_key=True, index=True)
+    id = id_column(__tablename__)
     email = Column(String, unique=True, index=True)
     password = Column(String)
     name = Column(String)
@@ -13,7 +18,7 @@ class Admin(Base):
 
 class Member(Base):
     __tablename__ = "members"
-    id = Column(Integer, primary_key=True, index=True)
+    id = id_column(__tablename__)
     first_name = Column(String, nullable=False)
     last_name = Column(String, nullable=False)
     email = Column(String, unique=True, index=True)
@@ -47,7 +52,7 @@ class Member(Base):
 
 class MemberPhysicalMetrics(Base):
     __tablename__ = "member_physical_metrics"
-    id = Column(Integer, primary_key=True, index=True)
+    id = id_column(__tablename__)
     member_id = Column(Integer, ForeignKey("members.id"), unique=True)
     height = Column(Float)
     weight = Column(Float)
@@ -63,7 +68,7 @@ class MemberPhysicalMetrics(Base):
 
 class MemberHealthProfile(Base):
     __tablename__ = "member_health_profiles"
-    id = Column(Integer, primary_key=True, index=True)
+    id = id_column(__tablename__)
     member_id = Column(Integer, ForeignKey("members.id"), unique=True)
     injuries = Column(Text, nullable=True)
     pain_areas = Column(Text, nullable=True)
@@ -78,7 +83,7 @@ class MemberHealthProfile(Base):
 
 class MemberLifestyleProfile(Base):
     __tablename__ = "member_lifestyle_profiles"
-    id = Column(Integer, primary_key=True, index=True)
+    id = id_column(__tablename__)
     member_id = Column(Integer, ForeignKey("members.id"), unique=True)
     sleep_hours = Column(Float, nullable=True)
     stress_level = Column(String, nullable=True)
@@ -94,7 +99,7 @@ class MemberLifestyleProfile(Base):
 
 class MemberGoals(Base):
     __tablename__ = "member_goals"
-    id = Column(Integer, primary_key=True, index=True)
+    id = id_column(__tablename__)
     member_id = Column(Integer, ForeignKey("members.id"), unique=True)
     primary_goal = Column(String)
     secondary_goals = Column(String, nullable=True)
@@ -109,7 +114,7 @@ class MemberGoals(Base):
 
 class MemberMotivationProfile(Base):
     __tablename__ = "member_motivation_profiles"
-    id = Column(Integer, primary_key=True, index=True)
+    id = id_column(__tablename__)
     member_id = Column(Integer, ForeignKey("members.id"), unique=True)
     motivation_type = Column(String)
     coaching_style = Column(String)
@@ -122,7 +127,7 @@ class MemberMotivationProfile(Base):
 
 class Assessment(Base):
     __tablename__ = "assessments"
-    id = Column(Integer, primary_key=True, index=True)
+    id = id_column(__tablename__)
     member_id = Column(Integer, ForeignKey("members.id"))
     assessment_date = Column(Date)
     pushups = Column(Integer, nullable=True)
@@ -140,7 +145,7 @@ class Assessment(Base):
 
 class ProgressEntry(Base):
     __tablename__ = "progress_entries"
-    id = Column(Integer, primary_key=True, index=True)
+    id = id_column(__tablename__)
     member_id = Column(Integer, ForeignKey("members.id"))
     date = Column(Date)
     weight = Column(Float, nullable=True)
@@ -154,7 +159,7 @@ class ProgressEntry(Base):
 
 class WorkoutPlan(Base):
     __tablename__ = "workout_plans"
-    id = Column(Integer, primary_key=True, index=True)
+    id = id_column(__tablename__)
     member_id = Column(Integer, ForeignKey("members.id"))
     plan_name = Column(String)
     goal_type = Column(String, nullable=True)
@@ -170,7 +175,7 @@ class WorkoutPlan(Base):
 
 class NutritionPlan(Base):
     __tablename__ = "nutrition_plans"
-    id = Column(Integer, primary_key=True, index=True)
+    id = id_column(__tablename__)
     member_id = Column(Integer, ForeignKey("members.id"))
     nutrition_goal = Column(String, nullable=True)
     calories_target = Column(Integer, nullable=True)
@@ -185,7 +190,7 @@ class NutritionPlan(Base):
 
 class SupplementPlan(Base):
     __tablename__ = "supplement_plans"
-    id = Column(Integer, primary_key=True, index=True)
+    id = id_column(__tablename__)
     member_id = Column(Integer, ForeignKey("members.id"))
     supplement_name = Column(String)
     purpose = Column(String, nullable=True)

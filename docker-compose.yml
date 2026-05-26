@@ -1,0 +1,14 @@
+#version: '3.8'
+
+services:
+  cyberfit-api:
+    build: .
+    container_name: cyberfit-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - DATABASE_URL=duckdb:///./data/cyberfit.db
+      - SECRET_KEY=cyberfit-secret-key-change-in-production
+    restart: unless-stopped

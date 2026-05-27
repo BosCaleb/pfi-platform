@@ -16,7 +16,7 @@ class Base(DeclarativeBase):
     """Declarative base for all SQLAlchemy ORM models."""
 
 
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "duckdb:///./data/cyberfit.db")
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "duckdb:///./data/pfi.db")
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"read_only": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

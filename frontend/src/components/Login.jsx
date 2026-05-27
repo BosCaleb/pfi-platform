@@ -19,7 +19,6 @@ export function Login({ onSubmit, onSeed, message, seedEnabled }) {
             <input
               name="email"
               type="email"
-              defaultValue="admin@pfi-platform.local"
               autoComplete="username"
               required
             />
@@ -29,7 +28,6 @@ export function Login({ onSubmit, onSeed, message, seedEnabled }) {
             <input
               name="password"
               type="password"
-              defaultValue="admin123"
               autoComplete="current-password"
               required
             />

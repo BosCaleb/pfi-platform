@@ -415,7 +415,7 @@ function App() {
             {tab === "sessions"  && <WorkoutSessions    token={token} members={members} />}
             {tab === "alerts"    && <ReassessmentAlerts token={token} members={members} />}
             {tab === "settings" && (
-              <Settings settings={settings} onRefresh={loadSettings} />
+              <Settings settings={settings} token={token} onRefresh={loadSettings} />
             )}
           </section>
         )}

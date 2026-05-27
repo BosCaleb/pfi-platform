@@ -12,12 +12,12 @@ Responsibilities:
 import logging
 import os
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
-from sqlalchemy import inspect, text
+from sqlalchemy import text
 
 from app.database import Base, engine
 from app.limiter import limiter
@@ -54,22 +54,52 @@ logger = logging.getLogger(__name__)
 def _ensure_member_consent_columns() -> None:
     """Add consent columns to the members table if they do not yet exist.
 
-    This migration guard is required because DuckDB does not support
-    ALTER TABLE … ADD COLUMN IF NOT EXISTS in older versions.
-    """
-    inspector = inspect(engine)
-    if "members" not in inspector.get_table_names():
-        return
+    Uses DuckDB's ``information_schema`` directly instead of SQLAlchemy's
+    ``inspect()`` / dialect reflection.  The SQLAlchemy reflection path
+    routes through the Postgres dialect, which tries to query
+    ``pg_catalog.pg_collation`` — a table DuckDB does not implement —
+    and also emits a flood of ``SAWarning`` messages for every column
+    whose type alias (``int4``, ``varchar``, ``bool``) it cannot map.
 
-    existing_columns = {col["name"] for col in inspector.get_columns("members")}
+    Querying ``information_schema.columns`` is plain SQL that DuckDB
+    supports natively and produces no warnings.
+    """
     pending: dict[str, str] = {
-        "privacy_consent": "ALTER TABLE members ADD COLUMN privacy_consent BOOLEAN DEFAULT false",
-        "medical_disclaimer_accepted": "ALTER TABLE members ADD COLUMN medical_disclaimer_accepted BOOLEAN DEFAULT false",
-        "marketing_consent": "ALTER TABLE members ADD COLUMN marketing_consent BOOLEAN DEFAULT false",
-        "consent_signed_at": "ALTER TABLE members ADD COLUMN consent_signed_at TIMESTAMP",
+        "privacy_consent": (
+            "ALTER TABLE members ADD COLUMN privacy_consent BOOLEAN DEFAULT false"
+        ),
+        "medical_disclaimer_accepted": (
+            "ALTER TABLE members ADD COLUMN medical_disclaimer_accepted BOOLEAN DEFAULT false"
+        ),
+        "marketing_consent": (
+            "ALTER TABLE members ADD COLUMN marketing_consent BOOLEAN DEFAULT false"
+        ),
+        "consent_signed_at": (
+            "ALTER TABLE members ADD COLUMN consent_signed_at TIMESTAMP"
+        ),
     }
 
     with engine.begin() as conn:
+        # Check whether the members table exists at all.
+        tables = {
+            row[0]
+            for row in conn.execute(
+                text("SELECT table_name FROM information_schema.tables "
+                     "WHERE table_schema = 'main'")
+            )
+        }
+        if "members" not in tables:
+            return
+
+        # Fetch current column names without touching SQLAlchemy reflection.
+        existing_columns = {
+            row[0]
+            for row in conn.execute(
+                text("SELECT column_name FROM information_schema.columns "
+                     "WHERE table_name = 'members' AND table_schema = 'main'")
+            )
+        }
+
         for column, statement in pending.items():
             if column not in existing_columns:
                 logger.info("Adding missing column: members.%s", column)
@@ -90,17 +120,14 @@ if _raw_origins.strip() == "*":
     CORS_ORIGINS: list[str] | str = ["*"]
     if os.getenv("ENV", "development").lower() == "production":
         logger.warning(
-            "CORS_ORIGINS is set to '*' in production — restrict this to your frontend origin(s)."
+            "CORS_ORIGINS is set to '*' in production — "
+            "restrict this to your frontend origin(s)."
         )
 else:
     CORS_ORIGINS = [o.strip() for o in _raw_origins.split(",") if o.strip()]
 
 logger.info("CORS allowed origins: %s", CORS_ORIGINS)
 
-
-# ------------------------------------------------------------------ #
-# FastAPI app                                                          #
-# ------------------------------------------------------------------ #
 
 # ------------------------------------------------------------------ #
 # FastAPI app                                                          #
@@ -119,7 +146,7 @@ app = FastAPI(
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-logger.info("Rate limiter ready (storage: %s)", limiter._storage_uri if hasattr(limiter, "_storage_uri") else "memory://")
+logger.info("Rate limiter ready.")
 
 app.add_middleware(
     CORSMiddleware,
@@ -128,6 +155,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # ------------------------------------------------------------------ #
 # Routers                                                              #
@@ -142,6 +170,7 @@ app.include_router(nutrition_plans.router)
 app.include_router(supplement_plans.router)
 app.include_router(dashboard.router)
 app.include_router(settings.router)
+
 
 # ------------------------------------------------------------------ #
 # Static SPA                                                           #

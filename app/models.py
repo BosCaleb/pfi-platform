@@ -45,9 +45,17 @@ class Member(Base):
     primary_goal = Column(String)
     fitness_level = Column(String)
     risk_level = Column(String, default="Low")
-    privacy_consent = Column(Boolean, default=False)
-    medical_disclaimer_accepted = Column(Boolean, default=False)
-    marketing_consent = Column(Boolean, default=False)
+    # Consent fields — existing
+    privacy_consent = Column(Boolean, default=False)              # data processing
+    medical_disclaimer_accepted = Column(Boolean, default=False)  # exercise risk
+    marketing_consent = Column(Boolean, default=False)            # optional marketing
+    # Consent fields — extended registration pack
+    consent_info_accuracy        = Column(Boolean, default=False)
+    consent_no_medical_advice    = Column(Boolean, default=False)
+    consent_nutrition_disclaimer = Column(Boolean, default=False)
+    consent_medical_clearance    = Column(Boolean, default=False)
+    consent_ai_recommendations   = Column(Boolean, default=False)
+    consent_terms_accepted       = Column(Boolean, default=False)
     consent_signed_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=_utcnow)
     updated_at = Column(DateTime, default=_utcnow, onupdate=_utcnow)

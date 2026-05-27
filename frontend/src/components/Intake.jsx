@@ -138,16 +138,42 @@ function Baseline({ profile, onField, errors }) {
     {f("assessment.shoulder_mobility",     "Shoulder mobility")}
     {f("assessment.balance_test",          "Balance test")}
     <Field profile={profile} path="assessment.overall_notes" label="Overall notes" textarea onField={onField} errors={errors} wide />
-    <p className="form-note info wide">
-      🔒 Member data is private and visible only to authorised admins.
-      Consent is required to store and use this profile.
-    </p>
-    <Checkbox profile={profile} path="consent.medical_disclaimer_accepted"
-      label="Medical disclaimer accepted" required onField={onField} errors={errors} />
-    <Checkbox profile={profile} path="consent.privacy_consent"
-      label="Privacy notice and member data consent accepted" required onField={onField} errors={errors} />
-    <Checkbox profile={profile} path="consent.marketing_consent"
-      label="Optional — communication and program update consent" onField={onField} errors={errors} />
+    <div className="consent-block wide">
+      <p className="consent-heading">📋 Member Acknowledgement &amp; Consent</p>
+      <p className="consent-subtext">
+        All items marked <span style={{ color: "var(--danger)" }}>*</span> are required before
+        registration can be completed. Please read each statement carefully before ticking.
+      </p>
+
+      <Checkbox profile={profile} path="consent.consent_info_accuracy" required onField={onField} errors={errors}
+        label="I confirm that the information I provided is accurate and complete." />
+
+      <Checkbox profile={profile} path="consent.medical_disclaimer_accepted" required onField={onField} errors={errors}
+        label="I understand that exercise involves risk and I participate voluntarily." />
+
+      <Checkbox profile={profile} path="consent.consent_no_medical_advice" required onField={onField} errors={errors}
+        label="I understand that this platform does not provide medical advice." />
+
+      <Checkbox profile={profile} path="consent.consent_nutrition_disclaimer" required onField={onField} errors={errors}
+        label="I understand that nutrition and supplement guidance is informational and not a substitute for professional advice." />
+
+      <Checkbox profile={profile} path="consent.privacy_consent" required onField={onField} errors={errors}
+        label="I consent to the processing of my personal, fitness and health-related information for coaching and progress tracking purposes." />
+
+      <Checkbox profile={profile} path="consent.consent_medical_clearance" required onField={onField} errors={errors}
+        label="I understand that I should seek medical clearance if I have any health condition, injury or medical concern." />
+
+      <Checkbox profile={profile} path="consent.consent_ai_recommendations" required onField={onField} errors={errors}
+        label="I understand that AI or automated recommendations may be used to assist the admin or coach, but all recommendations must be reviewed before being applied." />
+
+      <Checkbox profile={profile} path="consent.consent_terms_accepted" required onField={onField} errors={errors}
+        label="I accept the Terms and Conditions, Privacy Policy and Member Waiver." />
+
+      <p className="consent-divider">Optional</p>
+
+      <Checkbox profile={profile} path="consent.marketing_consent" onField={onField} errors={errors}
+        label="I consent to receiving programme updates and communication from the gym." />
+    </div>
   </>);
 }
 

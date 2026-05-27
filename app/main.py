@@ -85,13 +85,32 @@ def _ensure_member_consent_columns() -> None:
         "consent_signed_at": (
             "ALTER TABLE members ADD COLUMN consent_signed_at TIMESTAMP"
         ),
+        # Extended consent pack
+        "consent_info_accuracy": (
+            "ALTER TABLE members ADD COLUMN consent_info_accuracy BOOLEAN DEFAULT false"
+        ),
+        "consent_no_medical_advice": (
+            "ALTER TABLE members ADD COLUMN consent_no_medical_advice BOOLEAN DEFAULT false"
+        ),
+        "consent_nutrition_disclaimer": (
+            "ALTER TABLE members ADD COLUMN consent_nutrition_disclaimer BOOLEAN DEFAULT false"
+        ),
+        "consent_medical_clearance": (
+            "ALTER TABLE members ADD COLUMN consent_medical_clearance BOOLEAN DEFAULT false"
+        ),
+        "consent_ai_recommendations": (
+            "ALTER TABLE members ADD COLUMN consent_ai_recommendations BOOLEAN DEFAULT false"
+        ),
+        "consent_terms_accepted": (
+            "ALTER TABLE members ADD COLUMN consent_terms_accepted BOOLEAN DEFAULT false"
+        ),
     }
 
-    with engine.begin() as conn:
-        # Check whether the members table exists at all.
+    # Use a read-only connection to inspect schema — avoids transaction conflicts.
+    with engine.connect() as probe:
         tables = {
             row[0]
-            for row in conn.execute(
+            for row in probe.execute(
                 text("SELECT table_name FROM information_schema.tables "
                      "WHERE table_schema = 'main'")
             )
@@ -99,18 +118,20 @@ def _ensure_member_consent_columns() -> None:
         if "members" not in tables:
             return
 
-        # Fetch current column names without touching SQLAlchemy reflection.
         existing_columns = {
             row[0]
-            for row in conn.execute(
+            for row in probe.execute(
                 text("SELECT column_name FROM information_schema.columns "
                      "WHERE table_name = 'members' AND table_schema = 'main'")
             )
         }
 
-        for column, statement in pending.items():
-            if column not in existing_columns:
-                logger.info("Adding missing column: members.%s", column)
+    # Each ALTER TABLE runs in its own transaction — DuckDB cannot commit
+    # multiple DDL changes on the same table within a single transaction.
+    for column, statement in pending.items():
+        if column not in existing_columns:
+            logger.info("Adding missing column: members.%s", column)
+            with engine.begin() as conn:
                 conn.execute(text(statement))
 
 
@@ -126,6 +147,37 @@ try:
         _seed_phase2(_seed_db)
 except Exception as _e:
     logger.warning("Phase 2 seed skipped: %s", _e)
+
+# Auto-seed / reset admin credentials on startup when ALLOW_ADMIN_SEED=true.
+# If the admin already exists, its password is updated to match the env var.
+# If it does not exist, it is created.  This ensures credentials always
+# match the environment without requiring a manual button click.
+from app.config import admin_seed_enabled as _admin_seed_enabled
+from app import auth as _auth
+from app import models as _models
+
+if _admin_seed_enabled():
+    _admin_email    = os.getenv("DEFAULT_ADMIN_EMAIL",    "admin@pfi-platform.local")
+    _admin_password = os.getenv("DEFAULT_ADMIN_PASSWORD", "admin123")
+    try:
+        with _SessionLocal() as _db:
+            _existing = _db.query(_models.Admin).filter(
+                _models.Admin.email == _admin_email
+            ).first()
+            if _existing:
+                setattr(_existing, "password", _auth.get_password_hash(_admin_password))
+                _db.commit()
+                logger.info("Admin password reset on startup: %s", _admin_email)
+            else:
+                _db.add(_models.Admin(
+                    email=_admin_email,
+                    password=_auth.get_password_hash(_admin_password),
+                    name="Platform Admin",
+                ))
+                _db.commit()
+                logger.info("Admin created on startup: %s", _admin_email)
+    except Exception as _admin_e:
+        logger.warning("Admin auto-seed failed: %s", _admin_e)
 
 
 # ------------------------------------------------------------------ #

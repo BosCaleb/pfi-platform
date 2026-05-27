@@ -23,7 +23,7 @@ const HERO_STATS = [
   ["∞",       "Member Capacity"],
 ];
 
-export function Landing({ onLogin }) {
+export function Landing({ onLogin, onDisclaimers }) {
   return (
     <section className="landing-shell">
       <section className="hero">
@@ -102,6 +102,13 @@ export function Landing({ onLogin }) {
         <span>PFI Platform</span>
         <span>Fitness Intelligence for Serious Coaches</span>
         <span>Private — Admin Access Only</span>
+        <button
+          type="button"
+          className="landing-footer-link"
+          onClick={onDisclaimers}
+        >
+          Disclaimers &amp; Legal Notices
+        </button>
       </footer>
     </section>
   );

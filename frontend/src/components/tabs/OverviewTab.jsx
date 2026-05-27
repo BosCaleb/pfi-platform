@@ -26,7 +26,7 @@ export function OverviewTab({ member, computed, onEdit }) {
           </div>
           <div className="detail-metric">
             <span>BMI</span>
-            <strong>{member.physical_metrics?.bmi || "—"}</strong>
+            <strong>{member.physical_metrics?.bmi != null ? Number(member.physical_metrics.bmi).toFixed(2) : "—"}</strong>
           </div>
           <div className="detail-metric">
             <span>Fitness Age</span>

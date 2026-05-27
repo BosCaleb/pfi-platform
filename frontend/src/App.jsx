@@ -18,6 +18,7 @@ import { cloneProfile, today, unique, pick }    from "./utils/helpers.js";
 
 // ── Page components ──────────────────────────────────────────────────
 import { Landing }              from "./components/Landing.jsx";
+import { Disclaimers }          from "./components/Disclaimers.jsx";
 import { Login }                from "./components/Login.jsx";
 import { Dashboard }            from "./components/Dashboard.jsx";
 import { Intake }               from "./components/Intake.jsx";
@@ -338,7 +339,8 @@ function App() {
       </header>
 
       <main>
-        {view === "landing" && <Landing onLogin={() => setView("login")} />}
+        {view === "landing"      && <Landing onLogin={() => setView("login")} onDisclaimers={() => setView("disclaimers")} />}
+        {view === "disclaimers"  && <Disclaimers onBack={() => setView("landing")} />}
         {view === "login"   && (
           <Login
             onSubmit={login}

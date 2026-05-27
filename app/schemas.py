@@ -86,9 +86,17 @@ class BaselineAssessment(BaseModel):
     assessment_date: date
 
 class ConsentInfo(BaseModel):
-    privacy_consent: bool
-    medical_disclaimer_accepted: bool
-    marketing_consent: bool = False
+    # Core consent fields
+    privacy_consent: bool                           # data-processing consent
+    medical_disclaimer_accepted: bool               # exercise risk
+    marketing_consent: bool = False                 # optional marketing comms
+    # Extended registration consent pack
+    consent_info_accuracy: bool = False             # info is accurate and complete
+    consent_no_medical_advice: bool = False         # platform doesn't provide medical advice
+    consent_nutrition_disclaimer: bool = False      # nutrition/supplement guidance is informational
+    consent_medical_clearance: bool = False         # understands medical clearance requirement
+    consent_ai_recommendations: bool = False        # understands AI recommendations require review
+    consent_terms_accepted: bool = False            # accepts T&C, Privacy Policy and Waiver
 
 class MemberRegistration(BaseModel):
     personal: PersonalInfo
@@ -332,6 +340,12 @@ class MemberDetailOut(BaseModel):
     privacy_consent: Optional[bool] = None
     medical_disclaimer_accepted: Optional[bool] = None
     marketing_consent: Optional[bool] = None
+    consent_info_accuracy: Optional[bool] = None
+    consent_no_medical_advice: Optional[bool] = None
+    consent_nutrition_disclaimer: Optional[bool] = None
+    consent_medical_clearance: Optional[bool] = None
+    consent_ai_recommendations: Optional[bool] = None
+    consent_terms_accepted: Optional[bool] = None
     consent_signed_at: Optional[datetime] = None
     physical_metrics: Optional[MemberPhysicalOut] = None
     health_profile: Optional[MemberHealthOut] = None

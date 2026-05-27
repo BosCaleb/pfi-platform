@@ -39,9 +39,17 @@ export const emptyProfile = {
     shoulder_mobility: "", balance_test: "", overall_notes: "",
   },
   consent: {
+    // Core
     privacy_consent: false,
     medical_disclaimer_accepted: false,
     marketing_consent: false,
+    // Extended registration pack
+    consent_info_accuracy: false,
+    consent_no_medical_advice: false,
+    consent_nutrition_disclaimer: false,
+    consent_medical_clearance: false,
+    consent_ai_recommendations: false,
+    consent_terms_accepted: false,
   },
 };
 
@@ -66,7 +74,17 @@ export const STEP_REQUIRED = [
   [], // lifestyle — no required fields
   ["goals.primary_goal"],
   ["behavior.motivation_type", "behavior.coaching_style"],
-  ["assessment.assessment_date", "consent.medical_disclaimer_accepted", "consent.privacy_consent"],
+  [
+    "assessment.assessment_date",
+    "consent.consent_info_accuracy",
+    "consent.medical_disclaimer_accepted",
+    "consent.consent_no_medical_advice",
+    "consent.consent_nutrition_disclaimer",
+    "consent.privacy_consent",
+    "consent.consent_medical_clearance",
+    "consent.consent_ai_recommendations",
+    "consent.consent_terms_accepted",
+  ],
 ];
 
 export const TAB_ITEMS = [

@@ -48,9 +48,15 @@ def apply_member_registration(member: models.Member, data: schemas.MemberRegistr
     member.primary_goal = data.goals.primary_goal
     member.fitness_level = data.physical.fitness_level
     member.risk_level = data.health.risk_level
-    member.privacy_consent = data.consent.privacy_consent
-    member.medical_disclaimer_accepted = data.consent.medical_disclaimer_accepted
-    member.marketing_consent = data.consent.marketing_consent
+    member.privacy_consent              = data.consent.privacy_consent
+    member.medical_disclaimer_accepted  = data.consent.medical_disclaimer_accepted
+    member.marketing_consent            = data.consent.marketing_consent
+    member.consent_info_accuracy        = data.consent.consent_info_accuracy
+    member.consent_no_medical_advice    = data.consent.consent_no_medical_advice
+    member.consent_nutrition_disclaimer = data.consent.consent_nutrition_disclaimer
+    member.consent_medical_clearance    = data.consent.consent_medical_clearance
+    member.consent_ai_recommendations   = data.consent.consent_ai_recommendations
+    member.consent_terms_accepted       = data.consent.consent_terms_accepted
     if data.consent.privacy_consent and data.consent.medical_disclaimer_accepted:
         member.consent_signed_at = member.consent_signed_at or datetime.utcnow()
 

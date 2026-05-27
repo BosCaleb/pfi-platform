@@ -3,20 +3,36 @@
 # Prerequisites:
 #   1. Copy .env.example → .env and fill in real values.
 #   2. Never commit .env to version control.
+#   3. For HTTPS, place TLS certificates at:
+#        nginx/certs/cert.pem  — full-chain cert
+#        nginx/certs/key.pem   — private key
+#      Quick self-signed cert for local testing:
+#        mkdir -p nginx/certs
+#        openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+#          -keyout nginx/certs/key.pem -out nginx/certs/cert.pem \
+#          -subj "/CN=localhost"
 #
 # Usage:
 #   docker compose up --build        # first run
 #   docker compose up -d             # subsequent runs (detached)
 #   docker compose down              # stop and remove containers
+#
+# Ports exposed by nginx (not by the API directly):
+#   80  → HTTP, redirects to HTTPS
+#   443 → HTTPS reverse proxy to pfi-api:8000
 
 name: pfi-platform
 
 services:
+
+  # ── Application API ─────────────────────────────────────────────────
   pfi-api:
     build: .
     container_name: pfi-api
-    ports:
-      - "8000:8000"
+    # Do NOT expose port 8000 directly in production — all traffic should
+    # flow through nginx.  Uncomment only for local development without nginx:
+    # ports:
+    #   - "8000:8000"
     volumes:
       # Persist the DuckDB database file between container restarts.
       - ./data:/app/data
@@ -34,3 +50,44 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
+    networks:
+      - internal
+
+  # ── nginx reverse proxy ──────────────────────────────────────────────
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: pfi-nginx
+    depends_on:
+      pfi-api:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # nginx configuration
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      # TLS certificates — mount your cert.pem and key.pem here.
+      # For Let's Encrypt, replace with a certbot-managed volume.
+      - ./nginx/certs:/etc/nginx/certs:ro
+      # Let's Encrypt ACME challenge directory (used by certbot)
+      - ./nginx/certbot-webroot:/var/www/certbot:ro
+      # Log persistence
+      - ./nginx/logs:/var/log/nginx
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - internal
+      - external
+
+networks:
+  # Internal network: only pfi-api and nginx can talk to each other.
+  internal:
+    driver: bridge
+    internal: true
+  # External network: nginx is the only container that faces the internet.
+  external:
+    driver: bridge

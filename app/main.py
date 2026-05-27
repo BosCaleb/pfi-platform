@@ -12,12 +12,15 @@ Responsibilities:
 import logging
 import os
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 from sqlalchemy import inspect, text
 
 from app.database import Base, engine
+from app.limiter import limiter
 from app.routers import (
     assessments,
     auth,
@@ -99,6 +102,10 @@ logger.info("CORS allowed origins: %s", CORS_ORIGINS)
 # FastAPI app                                                          #
 # ------------------------------------------------------------------ #
 
+# ------------------------------------------------------------------ #
+# FastAPI app                                                          #
+# ------------------------------------------------------------------ #
+
 app = FastAPI(
     title="Personalised Fitness Intelligence Platform API",
     description=(
@@ -109,6 +116,10 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+logger.info("Rate limiter ready (storage: %s)", limiter._storage_uri if hasattr(limiter, "_storage_uri") else "memory://")
 
 app.add_middleware(
     CORSMiddleware,

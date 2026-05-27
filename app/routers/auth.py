@@ -9,11 +9,12 @@ never hard-coded in source code.
 import logging
 import os
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app import auth, database, models, schemas
 from app.config import admin_seed_enabled
+from app.limiter import limiter
 
 logger = logging.getLogger(__name__)
 
@@ -27,11 +28,17 @@ _DEFAULT_ADMIN_PASSWORD = os.getenv("DEFAULT_ADMIN_PASSWORD", "admin123")
 
 
 @router.post("/login", summary="Obtain a JWT access token")
-def login(credentials: schemas.LoginRequest, db: Session = Depends(database.get_db)):
+@limiter.limit("10/minute")
+def login(request: Request, credentials: schemas.LoginRequest, db: Session = Depends(database.get_db)):
     """Authenticate an admin and return a JWT bearer token.
+
+    Rate-limited to 10 attempts per minute per IP address.
+    Failed attempts are logged so that external tools (e.g. fail2ban) can
+    detect and block brute-force sources.
 
     Raises:
         HTTPException 400: If the credentials are invalid.
+        HTTPException 429: If the rate limit is exceeded.
     """
     admin = db.query(models.Admin).filter(models.Admin.email == credentials.email).first()
     if not admin or not auth.verify_password(credentials.password, admin.password):

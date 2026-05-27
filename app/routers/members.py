@@ -1,8 +1,13 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import Optional, List
 from datetime import datetime
 from app import models, schemas, auth, database, computed
+from app.audit import log_health_access
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/members", tags=["members"])
 
@@ -193,11 +198,19 @@ def get_member(member_id: int, db: Session = Depends(database.get_db), admin=Dep
     if not member:
         raise HTTPException(status_code=404, detail="Member not found")
 
-    physical = member.physical_metrics
-    health = member.health_profile
-    lifestyle = member.lifestyle_profile
+    physical   = member.physical_metrics
+    health     = member.health_profile
+    lifestyle  = member.lifestyle_profile
     motivation = member.motivation_profile
     assessments = member.assessments
+
+    # POPIA audit — log every read of special personal information (health data).
+    sensitive_types = ["physical_metrics", "health_profile", "lifestyle_profile", "assessments"]
+    log_health_access(
+        actor_email=admin.email,
+        member_id=member_id,
+        data_types=sensitive_types,
+    )
 
     return schemas.MemberDetailOut.model_validate({
         **{c.name: getattr(member, c.name) for c in member.__table__.columns},
@@ -228,6 +241,15 @@ def delete_member(member_id: int, db: Session = Depends(database.get_db), admin=
     member = db.query(models.Member).filter(models.Member.id == member_id).first()
     if not member:
         raise HTTPException(status_code=404, detail="Member not found")
+
+    # POPIA audit — permanent deletion of all special personal information.
+    log_health_access(
+        actor_email=admin.email,
+        member_id=member_id,
+        data_types=["physical_metrics", "health_profile", "lifestyle_profile",
+                    "assessments", "progress_entries", "plans"],
+        action="DELETE",
+    )
     for model in [
         models.SupplementPlan,
         models.NutritionPlan,

@@ -60,6 +60,14 @@ Thumbs.db
 # === Docker ===
 .dockerignore
 
+# === nginx ===
+# Never commit TLS private keys or certificates.
+nginx/certs/
+# nginx log files
+nginx/logs/
+# Let's Encrypt webroot
+nginx/certbot-webroot/
+
 # === Misc ===
 *.log
 *.tmp

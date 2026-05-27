@@ -2319,3 +2319,300 @@ legend { display: none; }
   .tab { flex: 0 0 auto; min-width: 90px; }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════
+   PHASE 3.1 — Check-Ins, Readiness & Coaching Intelligence
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── KPI row ─────────────────────────────────────────────────────────── */
+.ci-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.ci-kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ci-kpi-card.cyan   { border-color: rgba(34,211,238,0.25); }
+.ci-kpi-card.lime   { border-color: rgba(163,230,53,0.25); }
+.ci-kpi-card.warn   { border-color: rgba(255,176,32,0.25); }
+.ci-kpi-card.gold   { border-color: rgba(255,214,43,0.25); }
+.ci-kpi-card.danger { border-color: rgba(239,68,68,0.25); }
+.ci-kpi-card.purple { border-color: rgba(168,85,247,0.25); }
+.ci-kpi-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.ci-kpi-value { font-size: 28px; font-weight: 700; line-height: 1; }
+.ci-kpi-card.cyan   .ci-kpi-value { color: var(--cyan); }
+.ci-kpi-card.lime   .ci-kpi-value { color: var(--lime); }
+.ci-kpi-card.warn   .ci-kpi-value { color: var(--warn); }
+.ci-kpi-card.gold   .ci-kpi-value { color: var(--gold); }
+.ci-kpi-card.danger .ci-kpi-value { color: var(--danger); }
+.ci-kpi-card.purple .ci-kpi-value { color: var(--purple); }
+
+/* ── Check-in form layout ─────────────────────────────────────────────── */
+.ci-form { display: grid; gap: 14px; }
+.ci-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+.ci-field { display: flex; flex-direction: column; gap: 5px; font-size: 13px; }
+.ci-field.wide { grid-column: 1 / -1; }
+.ci-disclaimer {
+  background: rgba(34,211,238,0.06);
+  border: 1px solid rgba(34,211,238,0.18);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.ci-form-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.ci-form-toggle button {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.ci-form-toggle button.active {
+  background: var(--cyan);
+  color: #000;
+  border-color: var(--cyan);
+  font-weight: 600;
+}
+
+/* ── Recent check-ins list ───────────────────────────────────────────── */
+.ci-recent-list { display: flex; flex-direction: column; gap: 8px; }
+.ci-recent-row {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+.ci-recent-meta { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+.ci-recent-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+
+/* ── Readiness summary table ──────────────────────────────────────────── */
+.ci-readiness-table { display: flex; flex-direction: column; gap: 6px; }
+.ci-readiness-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+}
+.ci-readiness-score { font-size: 18px; font-weight: 700; }
+.ci-readiness-icon  { font-size: 18px; }
+
+/* ── Score colour helpers ─────────────────────────────────────────────── */
+.score-lime   { color: var(--lime); }
+.score-gold   { color: var(--gold); }
+.score-warn   { color: var(--warn); }
+.score-danger { color: var(--danger); }
+
+/* Text colour helpers */
+.text-lime   { color: var(--lime)   !important; }
+.text-gold   { color: var(--gold)   !important; }
+.text-warn   { color: var(--warn)   !important; }
+.text-danger { color: var(--danger) !important; }
+.text-cyan   { color: var(--cyan)   !important; }
+.text-purple { color: var(--purple) !important; }
+
+/* Background colour helpers */
+.bg-lime   { background: var(--lime)   !important; }
+.bg-gold   { background: var(--gold)   !important; }
+.bg-warn   { background: var(--warn)   !important; }
+.bg-danger { background: var(--danger) !important; }
+.bg-cyan   { background: var(--cyan)   !important; }
+.bg-purple { background: var(--purple) !important; }
+
+/* Border colour helpers */
+.border-lime   { border-color: rgba(163,230,53,0.4)  !important; }
+.border-gold   { border-color: rgba(255,214,43,0.4)  !important; }
+.border-warn   { border-color: rgba(255,176,32,0.4)  !important; }
+.border-danger { border-color: rgba(239,68,68,0.4)   !important; }
+.border-cyan   { border-color: rgba(34,211,238,0.4)  !important; }
+.border-purple { border-color: rgba(168,85,247,0.4)  !important; }
+
+/* ── Coach task rows ──────────────────────────────────────────────────── */
+.ci-task-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  margin-bottom: 6px;
+}
+.ci-task-row:hover          { border-color: var(--cyan); background: rgba(34,211,238,0.04); }
+.ci-task-row.selected       { border-color: var(--cyan); background: rgba(34,211,238,0.07); }
+.ci-task-row.overdue        { border-color: rgba(239,68,68,0.35); }
+.ci-task-body               { flex: 1; min-width: 0; }
+.ci-task-title              { font-size: 14px; font-weight: 600; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ci-task-meta               { font-size: 11px; color: var(--muted); }
+
+/* ── Task / flag detail panel ─────────────────────────────────────────── */
+.ci-task-detail { padding: 20px 22px; }
+.ci-task-detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 8px;
+}
+.ci-task-description {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+/* ── Readiness score rings (ReadinessTab) ─────────────────────────────── */
+.readiness-scores-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 8px;
+}
+.readiness-ring-card {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 20px;
+  min-width: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+.readiness-ring-score {
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1;
+}
+.readiness-ring-label { color: var(--muted); font-size: 12px; }
+.readiness-ring-bar-track {
+  width: 100%;
+  height: 5px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.readiness-ring-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+/* ── Check-in history timeline ────────────────────────────────────────── */
+.ci-history-row {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ci-history-row:last-child { border-bottom: none; }
+.ci-history-date  { display: block; margin-bottom: 2px; }
+.ci-history-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.ci-history-notes { margin: 0; font-style: italic; }
+
+/* ── Score history mini table ─────────────────────────────────────────── */
+.ci-score-history { display: flex; flex-direction: column; gap: 5px; }
+.ci-score-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 13px;
+}
+.ci-score-row:last-child { border-bottom: none; }
+.ci-score-val { font-size: 16px; font-weight: 700; min-width: 32px; text-align: right; }
+
+/* ── Intel section (generic card section) ─────────────────────────────── */
+.intel-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+.intel-section h4 { margin: 0 0 12px; font-size: 14px; }
+
+/* ── Flag chips — extended colour variants ────────────────────────────── */
+.flag-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  background: rgba(255,255,255,0.08);
+  color: var(--fg);
+}
+.flag-chip.lime   { background: rgba(163,230,53,0.15);  color: var(--lime);   border: 1px solid rgba(163,230,53,0.3);  }
+.flag-chip.gold   { background: rgba(255,214,43,0.15);  color: var(--gold);   border: 1px solid rgba(255,214,43,0.3);  }
+.flag-chip.warn   { background: rgba(255,176,32,0.15);  color: var(--warn);   border: 1px solid rgba(255,176,32,0.3);  }
+.flag-chip.danger { background: rgba(239,68,68,0.15);   color: var(--danger); border: 1px solid rgba(239,68,68,0.3);   }
+.flag-chip.cyan   { background: rgba(34,211,238,0.12);  color: var(--cyan);   border: 1px solid rgba(34,211,238,0.28); }
+.flag-chip.purple { background: rgba(168,85,247,0.12);  color: var(--purple); border: 1px solid rgba(168,85,247,0.28); }
+
+/* ── Disc callout (recommendation summary) ────────────────────────────── */
+.disc-callout {
+  background: rgba(34,211,238,0.06);
+  border-left: 3px solid var(--cyan);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+/* ── Two-column phase 2 / 3 layout ───────────────────────────────────── */
+.p2-two-col   { display: grid; grid-template-columns: 340px 1fr; gap: 20px; }
+.p2-left-list { display: flex; flex-direction: column; gap: 0; overflow-y: auto; max-height: 680px; }
+.p2-right-detail { min-width: 0; }
+@media (max-width: 900px) {
+  .p2-two-col { grid-template-columns: 1fr; }
+}
+
+/* ── Filter bar ───────────────────────────────────────────────────────── */
+.p2-filter-bar { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+.p2-filter-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.p2-filter-row select,
+.p2-filter-row input { max-width: 200px; }
+
+/* ── "form-note info wide" callout ───────────────────────────────────── */
+.form-note.info.wide {
+  background: rgba(34,211,238,0.06);
+  border: 1px solid rgba(34,211,238,0.18);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+

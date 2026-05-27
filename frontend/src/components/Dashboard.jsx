@@ -71,17 +71,39 @@ export function Dashboard({ stats, reassessments, token, onRefresh, onSelectMemb
 
   // Phase 2 KPIs
   const [p2Stats, setP2Stats] = useState(null);
+  // Phase 3.1 KPIs
+  const [p3Stats, setP3Stats] = useState(null);
 
   useEffect(() => {
     if (!token) return;
     Promise.allSettled([
       request("/api/workout-groups/?status=Active", token),
       request("/api/reassessment-alerts/?status=Open", token),
-      request("/api/workout-sessions/member/0", token).catch(() => null), // just to see if endpoint works
     ]).then(([groups, openAlerts]) => {
       setP2Stats({
         activeGroups: groups.status === "fulfilled" ? groups.value.length : 0,
         openAlerts:   openAlerts.status === "fulfilled" ? openAlerts.value.length : 0,
+      });
+    });
+  }, [token]);
+
+  useEffect(() => {
+    if (!token) return;
+    Promise.allSettled([
+      request("/api/readiness/dashboard", token),
+      request("/api/coach-tasks/?status=Open&limit=200", token),
+      request("/api/pain-flags/?status=Open&limit=200", token),
+    ]).then(([dash, tasks, flags]) => {
+      const d = dash.status === "fulfilled" ? dash.value : {};
+      const t = tasks.status === "fulfilled" ? tasks.value : [];
+      const f = flags.status === "fulfilled" ? flags.value : [];
+      setP3Stats({
+        redReadiness:   d.red_count       ?? 0,
+        openTasks:      t.length,
+        urgentTasks:    t.filter(x => x.priority === "Urgent").length,
+        openPainFlags:  f.length,
+        criticalFlags:  f.filter(x => x.risk_level === "Critical").length,
+        avgReadiness:   d.average_readiness_score,
       });
     });
   }, [token]);
@@ -124,7 +146,7 @@ export function Dashboard({ stats, reassessments, token, onRefresh, onSelectMemb
 
       {/* Phase 2 KPIs */}
       {p2Stats && (
-        <div className="stats-grid" style={{ marginBottom: 22, gridTemplateColumns: "repeat(2, minmax(0, 1fr))" }}>
+        <div className="stats-grid" style={{ marginBottom: 16, gridTemplateColumns: "repeat(2, minmax(0, 1fr))" }}>
           <div className="stat-card purple">
             <div className="stat-card-top">
               <span className="stat-card-label">Active Groups</span>
@@ -138,6 +160,33 @@ export function Dashboard({ stats, reassessments, token, onRefresh, onSelectMemb
               <span className="stat-icon">🔔</span>
             </div>
             <div className="stat-value">{p2Stats.openAlerts}</div>
+          </div>
+        </div>
+      )}
+
+      {/* Phase 3.1 KPIs — Readiness & Coaching */}
+      {p3Stats && (
+        <div className="stats-grid" style={{ marginBottom: 22, gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }}>
+          <div className={`stat-card ${p3Stats.redReadiness > 0 ? "danger" : "lime"}`}>
+            <div className="stat-card-top">
+              <span className="stat-card-label">🔴 Red Readiness</span>
+              <span className="stat-icon">⚡</span>
+            </div>
+            <div className="stat-value">{p3Stats.redReadiness}</div>
+          </div>
+          <div className={`stat-card ${p3Stats.urgentTasks > 0 ? "danger" : p3Stats.openTasks > 0 ? "warn" : "lime"}`}>
+            <div className="stat-card-top">
+              <span className="stat-card-label">Coach Tasks</span>
+              <span className="stat-icon">📋</span>
+            </div>
+            <div className="stat-value">{p3Stats.openTasks}</div>
+          </div>
+          <div className={`stat-card ${p3Stats.criticalFlags > 0 ? "danger" : p3Stats.openPainFlags > 0 ? "warn" : "lime"}`}>
+            <div className="stat-card-top">
+              <span className="stat-card-label">Pain Flags</span>
+              <span className="stat-icon">🚩</span>
+            </div>
+            <div className="stat-value">{p3Stats.openPainFlags}</div>
           </div>
         </div>
       )}

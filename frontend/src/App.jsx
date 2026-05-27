@@ -19,6 +19,11 @@ import { cloneProfile, today, unique, pick }    from "./utils/helpers.js";
 // ── Page components ──────────────────────────────────────────────────
 import { Landing }              from "./components/Landing.jsx";
 import { Disclaimers }          from "./components/Disclaimers.jsx";
+
+// Phase 3.1 — Check-Ins & Coaching Intelligence
+import { CheckInDashboard }     from "./components/CheckInDashboard.jsx";
+import { CoachTasks }           from "./components/CoachTasks.jsx";
+import { PainFlags }            from "./components/PainFlags.jsx";
 import { Login }                from "./components/Login.jsx";
 import { Dashboard }            from "./components/Dashboard.jsx";
 import { Intake }               from "./components/Intake.jsx";
@@ -416,6 +421,10 @@ function App() {
             {tab === "plans"     && <PlanBuilder        token={token} />}
             {tab === "sessions"  && <WorkoutSessions    token={token} members={members} />}
             {tab === "alerts"    && <ReassessmentAlerts token={token} members={members} />}
+            {/* Phase 3.1 — Check-Ins & Coaching Intelligence */}
+            {tab === "check-ins"  && <CheckInDashboard token={token} members={members} />}
+            {tab === "tasks"      && <CoachTasks        token={token} members={members} />}
+            {tab === "pain-flags" && <PainFlags         token={token} members={members} />}
             {tab === "settings" && (
               <Settings settings={settings} token={token} onRefresh={loadSettings} />
             )}

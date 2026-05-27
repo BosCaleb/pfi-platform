@@ -531,7 +531,7 @@ class ReassessmentAlert(Base):
 class MemberCheckIn(Base):
     __tablename__ = "member_check_ins"
     id = id_column(__tablename__)
-    member_id = Column(Integer, ForeignKey("members.id", ondelete="CASCADE"), nullable=False, index=True)
+    member_id = Column(Integer, ForeignKey("members.id"), nullable=False, index=True)
     check_in_date = Column(Date, nullable=False)
     check_in_type = Column(String, default="Daily")
     energy_level = Column(String)           # Very Low/Low/Moderate/High/Very High
@@ -557,7 +557,7 @@ class MemberCheckIn(Base):
 class WeeklyMemberCheckIn(Base):
     __tablename__ = "weekly_member_check_ins"
     id = id_column(__tablename__)
-    member_id = Column(Integer, ForeignKey("members.id", ondelete="CASCADE"), nullable=False, index=True)
+    member_id = Column(Integer, ForeignKey("members.id"), nullable=False, index=True)
     week_start_date = Column(Date, nullable=False)
     week_end_date = Column(Date, nullable=False)
     check_in_type = Column(String, default="Weekly")
@@ -584,8 +584,8 @@ class WeeklyMemberCheckIn(Base):
 class ReadinessScore(Base):
     __tablename__ = "readiness_scores"
     id = id_column(__tablename__)
-    member_id = Column(Integer, ForeignKey("members.id", ondelete="CASCADE"), nullable=False, index=True)
-    check_in_id = Column(Integer, ForeignKey("member_check_ins.id", ondelete="SET NULL"), nullable=True)
+    member_id = Column(Integer, ForeignKey("members.id"), nullable=False, index=True)
+    check_in_id = Column(Integer, ForeignKey("member_check_ins.id"), nullable=True)
     score = Column(Float, nullable=False)
     category = Column(String, nullable=False)  # Green/Yellow/Orange/Red
     recommendation_summary = Column(Text)
@@ -595,8 +595,8 @@ class ReadinessScore(Base):
 class RecoveryScore(Base):
     __tablename__ = "recovery_scores"
     id = id_column(__tablename__)
-    member_id = Column(Integer, ForeignKey("members.id", ondelete="CASCADE"), nullable=False, index=True)
-    check_in_id = Column(Integer, ForeignKey("member_check_ins.id", ondelete="SET NULL"), nullable=True)
+    member_id = Column(Integer, ForeignKey("members.id"), nullable=False, index=True)
+    check_in_id = Column(Integer, ForeignKey("member_check_ins.id"), nullable=True)
     score = Column(Float, nullable=False)
     category = Column(String, nullable=False)   # Excellent Recovery/Good Recovery/Moderate Recovery/Poor Recovery/Recovery Risk
     score_breakdown_json = Column(Text)
@@ -605,7 +605,7 @@ class RecoveryScore(Base):
 class MemberAdherenceSummary(Base):
     __tablename__ = "member_adherence_summaries"
     id = id_column(__tablename__)
-    member_id = Column(Integer, ForeignKey("members.id", ondelete="CASCADE"), nullable=False, index=True)
+    member_id = Column(Integer, ForeignKey("members.id"), nullable=False, index=True)
     period_start = Column(Date, nullable=False)
     period_end = Column(Date, nullable=False)
     workout_adherence_percentage = Column(Float, default=0.0)
@@ -620,7 +620,7 @@ class MemberAdherenceSummary(Base):
 class PainRiskFlag(Base):
     __tablename__ = "pain_risk_flags"
     id = id_column(__tablename__)
-    member_id = Column(Integer, ForeignKey("members.id", ondelete="CASCADE"), nullable=False, index=True)
+    member_id = Column(Integer, ForeignKey("members.id"), nullable=False, index=True)
     source_type = Column(String)    # Check-In/Workout Session/Exercise Log/Admin Note
     source_id = Column(Integer)
     pain_score = Column(Integer)
@@ -631,13 +631,13 @@ class PainRiskFlag(Base):
     status = Column(String, default="Open")     # Open/Reviewed/Closed
     created_at = Column(DateTime, default=_utcnow)
     reviewed_at = Column(DateTime)
-    reviewed_by_admin_id = Column(Integer, ForeignKey("admins.id", ondelete="SET NULL"), nullable=True)
+    reviewed_by_admin_id = Column(Integer, ForeignKey("admins.id"), nullable=True)
 
 class CoachTask(Base):
     __tablename__ = "coach_tasks"
     id = id_column(__tablename__)
-    member_id = Column(Integer, ForeignKey("members.id", ondelete="CASCADE"), nullable=False, index=True)
-    related_group_id = Column(Integer, ForeignKey("workout_groups.id", ondelete="SET NULL"), nullable=True)
+    member_id = Column(Integer, ForeignKey("members.id"), nullable=False, index=True)
+    related_group_id = Column(Integer, ForeignKey("workout_groups.id"), nullable=True)
     related_alert_id = Column(Integer, nullable=True)
     task_type = Column(String)      # Pain Review/Readiness Review/Low Adherence/Reassessment/Nutrition Review/Supplement Review/Injury Review/Coach Follow-Up/General
     title = Column(String, nullable=False)
@@ -645,7 +645,7 @@ class CoachTask(Base):
     priority = Column(String, default="Medium")     # Low/Medium/High/Urgent
     status = Column(String, default="Open")         # Open/In Progress/Completed/Dismissed
     due_date = Column(Date)
-    assigned_to_admin_id = Column(Integer, ForeignKey("admins.id", ondelete="SET NULL"), nullable=True)
+    assigned_to_admin_id = Column(Integer, ForeignKey("admins.id"), nullable=True)
     created_by_system = Column(Boolean, default=False)
     coach_note = Column(Text)
     dismiss_reason = Column(Text)
@@ -655,7 +655,7 @@ class CoachTask(Base):
 class NutritionAdherenceLog(Base):
     __tablename__ = "nutrition_adherence_logs"
     id = id_column(__tablename__)
-    member_id = Column(Integer, ForeignKey("members.id", ondelete="CASCADE"), nullable=False, index=True)
+    member_id = Column(Integer, ForeignKey("members.id"), nullable=False, index=True)
     date = Column(Date, nullable=False)
     nutrition_adherence_rating = Column(String)
     hunger_level = Column(String)       # Low/Moderate/High/Very High
@@ -667,9 +667,9 @@ class NutritionAdherenceLog(Base):
 class SupplementAdherenceLog(Base):
     __tablename__ = "supplement_adherence_logs"
     id = id_column(__tablename__)
-    member_id = Column(Integer, ForeignKey("members.id", ondelete="CASCADE"), nullable=False, index=True)
+    member_id = Column(Integer, ForeignKey("members.id"), nullable=False, index=True)
     date = Column(Date, nullable=False)
-    supplement_plan_id = Column(Integer, ForeignKey("supplement_plans.id", ondelete="SET NULL"), nullable=True)
+    supplement_plan_id = Column(Integer, ForeignKey("supplement_plans.id"), nullable=True)
     adherence_status = Column(String)   # Complete/Partial/Missed/Not Applicable
     side_effects_reported = Column(Boolean, default=False)
     side_effect_notes = Column(Text)
@@ -679,11 +679,11 @@ class SupplementAdherenceLog(Base):
 class CheckInAlertEvent(Base):
     __tablename__ = "check_in_alert_events"
     id = id_column(__tablename__)
-    member_id = Column(Integer, ForeignKey("members.id", ondelete="CASCADE"), nullable=False, index=True)
+    member_id = Column(Integer, ForeignKey("members.id"), nullable=False, index=True)
     alert_type = Column(String)     # Pain/Readiness/Adherence/Recovery/Nutrition/Supplement
     severity = Column(String)       # Info/Warning/High/Critical
     message = Column(Text)
     source_check_in_id = Column(Integer)
-    coach_task_id = Column(Integer, ForeignKey("coach_tasks.id", ondelete="SET NULL"), nullable=True)
-    pain_flag_id = Column(Integer, ForeignKey("pain_risk_flags.id", ondelete="SET NULL"), nullable=True)
+    coach_task_id = Column(Integer, ForeignKey("coach_tasks.id"), nullable=True)
+    pain_flag_id = Column(Integer, ForeignKey("pain_risk_flags.id"), nullable=True)
     created_at = Column(DateTime, default=_utcnow)

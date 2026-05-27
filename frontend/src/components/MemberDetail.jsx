@@ -5,6 +5,7 @@ import { OverviewTab }   from "./tabs/OverviewTab.jsx";
 import { ProgressTab }   from "./tabs/ProgressTab.jsx";
 import { PlansTab }      from "./tabs/PlansTab.jsx";
 import { WorkoutTab }    from "./tabs/WorkoutTab.jsx";
+import { ReadinessTab }  from "./tabs/ReadinessTab.jsx";
 import { ManageTab }     from "./tabs/ManageTab.jsx";
 import { initials, avatarVariant } from "../utils/helpers.js";
 
@@ -25,8 +26,9 @@ export function MemberDetail({ member, token, onEdit, onDeleteMember, onDeleteAs
         (member.supplement_plans || []).length
       })`,
     },
-    { id: "workout", label: "Workout" },
-    { id: "manage",  label: "Manage" },
+    { id: "workout",   label: "Workout" },
+    { id: "readiness", label: "Readiness" },
+    { id: "manage",    label: "Manage" },
   ];
 
   return (
@@ -66,7 +68,8 @@ export function MemberDetail({ member, token, onEdit, onDeleteMember, onDeleteAs
       {innerTab === "overview"  && <OverviewTab  member={member} computed={computed} onEdit={onEdit} />}
       {innerTab === "progress"  && <ProgressTab  member={member} onDeleteAssessment={onDeleteAssessment} onDeleteProgress={onDeleteProgress} />}
       {innerTab === "plans"     && <PlansTab     member={member} onDeletePlan={onDeletePlan} />}
-      {innerTab === "workout"   && <WorkoutTab   member={member} token={token} />}
+      {innerTab === "workout"   && <WorkoutTab    member={member} token={token} />}
+      {innerTab === "readiness" && <ReadinessTab member={member} token={token} />}
       {innerTab === "manage"    && <ManageTab    member={member} onEdit={onEdit} onDeleteMember={onDeleteMember} />}
     </>
   );

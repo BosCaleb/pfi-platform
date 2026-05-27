@@ -39,6 +39,14 @@ from app.routers import (
     workout_sessions,
     reassessment_alerts,
     safety,
+    # Phase 3.1 — Check-Ins and Coaching Intelligence
+    check_ins,
+    weekly_check_ins,
+    readiness,
+    coach_tasks,
+    pain_flags,
+    nutrition_logs,
+    member_portal,
 )
 
 # ------------------------------------------------------------------ #
@@ -248,6 +256,15 @@ app.include_router(member_groups.router)
 app.include_router(workout_sessions.router)
 app.include_router(reassessment_alerts.router)
 app.include_router(safety.router)
+
+# Phase 3.1 — Check-Ins and Coaching Intelligence
+app.include_router(check_ins.router)
+app.include_router(weekly_check_ins.router)
+app.include_router(readiness.router)
+app.include_router(coach_tasks.router)
+app.include_router(pain_flags.router)
+app.include_router(nutrition_logs.router)
+app.include_router(member_portal.router)
 
 
 # ------------------------------------------------------------------ #

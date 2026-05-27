@@ -88,15 +88,19 @@ export const STEP_REQUIRED = [
 ];
 
 export const TAB_ITEMS = [
-  { id: "dashboard", icon: "⚡",  label: "Dashboard" },
-  { id: "intake",    icon: "➕",  label: "Member Intake" },
-  { id: "members",   icon: "👥",  label: "Members" },
-  { id: "tracking",  icon: "📈",  label: "Tracking" },
+  { id: "dashboard",  icon: "⚡",  label: "Dashboard" },
+  { id: "intake",     icon: "➕",  label: "Member Intake" },
+  { id: "members",    icon: "👥",  label: "Members" },
+  { id: "tracking",   icon: "📈",  label: "Tracking" },
   // Phase 2 — Workout Intelligence
-  { id: "groups",    icon: "🏋️", label: "Groups" },
-  { id: "exercises", icon: "📚",  label: "Exercises" },
-  { id: "plans",     icon: "🗂",  label: "Plans" },
-  { id: "sessions",  icon: "🎯",  label: "Sessions" },
-  { id: "alerts",    icon: "🔔",  label: "Alerts" },
-  { id: "settings",  icon: "⚙️",  label: "Settings" },
+  { id: "groups",     icon: "🏋️", label: "Groups" },
+  { id: "exercises",  icon: "📚",  label: "Exercises" },
+  { id: "plans",      icon: "🗂",  label: "Plans" },
+  { id: "sessions",   icon: "🎯",  label: "Sessions" },
+  { id: "alerts",     icon: "🔔",  label: "Alerts" },
+  // Phase 3.1 — Check-Ins & Coaching Intelligence
+  { id: "check-ins",  icon: "✅",  label: "Check-Ins" },
+  { id: "tasks",      icon: "📋",  label: "Coach Tasks" },
+  { id: "pain-flags", icon: "🚩",  label: "Pain & Risk" },
+  { id: "settings",   icon: "⚙️",  label: "Settings" },
 ];

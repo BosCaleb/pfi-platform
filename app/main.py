@@ -31,6 +31,14 @@ from app.routers import (
     settings,
     supplement_plans,
     workout_plans,
+    # Phase 2 — Workout Intelligence
+    workout_groups,
+    exercise_library,
+    plan_builder,
+    member_groups,
+    workout_sessions,
+    reassessment_alerts,
+    safety,
 )
 
 # ------------------------------------------------------------------ #
@@ -110,6 +118,15 @@ Base.metadata.create_all(bind=engine)
 _ensure_member_consent_columns()
 logger.info("Database tables ready.")
 
+# Phase 2 seed data (idempotent — skips if data already exists)
+from app.database import SessionLocal as _SessionLocal
+from app.seed_phase2 import seed_phase2 as _seed_phase2
+try:
+    with _SessionLocal() as _seed_db:
+        _seed_phase2(_seed_db)
+except Exception as _e:
+    logger.warning("Phase 2 seed skipped: %s", _e)
+
 
 # ------------------------------------------------------------------ #
 # CORS                                                                 #
@@ -170,6 +187,15 @@ app.include_router(nutrition_plans.router)
 app.include_router(supplement_plans.router)
 app.include_router(dashboard.router)
 app.include_router(settings.router)
+
+# Phase 2 — Workout Intelligence
+app.include_router(workout_groups.router)
+app.include_router(exercise_library.router)
+app.include_router(plan_builder.router)
+app.include_router(member_groups.router)
+app.include_router(workout_sessions.router)
+app.include_router(reassessment_alerts.router)
+app.include_router(safety.router)
 
 
 # ------------------------------------------------------------------ #

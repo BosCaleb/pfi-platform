@@ -4,7 +4,7 @@ import { Filter }       from "./ui/Filter.jsx";
 import { MemberDetail } from "./MemberDetail.jsx";
 
 export function Members({
-  members, selected, filters, options,
+  members, selected, filters, options, token,
   onFilter, onRefresh, onSelect,
   onEdit, onDeleteMember, onDeleteAssessment, onDeleteProgress, onDeletePlan,
 }) {
@@ -81,6 +81,7 @@ export function Members({
           {selected ? (
             <MemberDetail
               member={selected}
+              token={token}
               onEdit={onEdit}
               onDeleteMember={onDeleteMember}
               onDeleteAssessment={onDeleteAssessment}

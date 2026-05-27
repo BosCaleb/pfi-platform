@@ -17,13 +17,20 @@ import { request, cleanPayload, numericOrNull } from "./utils/api.js";
 import { cloneProfile, today, unique, pick }    from "./utils/helpers.js";
 
 // ── Page components ──────────────────────────────────────────────────
-import { Landing }   from "./components/Landing.jsx";
-import { Login }     from "./components/Login.jsx";
-import { Dashboard } from "./components/Dashboard.jsx";
-import { Intake }    from "./components/Intake.jsx";
-import { Members }   from "./components/Members.jsx";
-import { Tracking }  from "./components/Tracking.jsx";
-import { Settings }  from "./components/Settings.jsx";
+import { Landing }              from "./components/Landing.jsx";
+import { Login }                from "./components/Login.jsx";
+import { Dashboard }            from "./components/Dashboard.jsx";
+import { Intake }               from "./components/Intake.jsx";
+import { Members }              from "./components/Members.jsx";
+import { Tracking }             from "./components/Tracking.jsx";
+import { Settings }             from "./components/Settings.jsx";
+
+// Phase 2 — Workout Intelligence
+import { WorkoutGroups }        from "./components/WorkoutGroups.jsx";
+import { ExerciseLibrary }      from "./components/ExerciseLibrary.jsx";
+import { PlanBuilder }          from "./components/PlanBuilder.jsx";
+import { WorkoutSessions }      from "./components/WorkoutSessions.jsx";
+import { ReassessmentAlerts }   from "./components/ReassessmentAlerts.jsx";
 
 // ── App ──────────────────────────────────────────────────────────────
 
@@ -359,6 +366,7 @@ function App() {
               <Dashboard
                 stats={dashboard}
                 reassessments={reassessments}
+                token={token}
                 onRefresh={loadDashboard}
                 onSelectMember={id => { setTab("members"); showMember(id); }}
               />
@@ -381,6 +389,7 @@ function App() {
                 selected={selected}
                 filters={filters}
                 options={filterOptions}
+                token={token}
                 onFilter={nf => { setFilters(nf); loadMembers(nf); }}
                 onRefresh={() => loadMembers()}
                 onSelect={showMember}
@@ -399,6 +408,12 @@ function App() {
                 onRefresh={loadMembers}
               />
             )}
+            {/* Phase 2 — Workout Intelligence */}
+            {tab === "groups"    && <WorkoutGroups      token={token} />}
+            {tab === "exercises" && <ExerciseLibrary    token={token} />}
+            {tab === "plans"     && <PlanBuilder        token={token} />}
+            {tab === "sessions"  && <WorkoutSessions    token={token} members={members} />}
+            {tab === "alerts"    && <ReassessmentAlerts token={token} members={members} />}
             {tab === "settings" && (
               <Settings settings={settings} onRefresh={loadSettings} />
             )}

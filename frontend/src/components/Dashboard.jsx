@@ -1,6 +1,8 @@
 // ── Dashboard ────────────────────────────────────────────────────────
-import { Badge }     from "./ui/Badge.jsx";
-import { ScoreBar }  from "./ui/ScoreBar.jsx";
+import { useState, useEffect } from "react";
+import { Badge }    from "./ui/Badge.jsx";
+import { ScoreBar } from "./ui/ScoreBar.jsx";
+import { request }  from "../utils/api.js";
 import { initials, avatarVariant } from "../utils/helpers.js";
 
 const STAT_CARDS = (s) => [
@@ -62,10 +64,27 @@ function AlertRow({ r, onSelect }) {
   );
 }
 
-export function Dashboard({ stats, reassessments, onRefresh, onSelectMember }) {
+export function Dashboard({ stats, reassessments, token, onRefresh, onSelectMember }) {
   const s        = stats || {};
   const alerts   = reassessments ?? [];
   const critical = alerts.filter(r => r.urgency === "critical").length;
+
+  // Phase 2 KPIs
+  const [p2Stats, setP2Stats] = useState(null);
+
+  useEffect(() => {
+    if (!token) return;
+    Promise.allSettled([
+      request("/api/workout-groups/?status=Active", token),
+      request("/api/reassessment-alerts/?status=Open", token),
+      request("/api/workout-sessions/member/0", token).catch(() => null), // just to see if endpoint works
+    ]).then(([groups, openAlerts]) => {
+      setP2Stats({
+        activeGroups: groups.status === "fulfilled" ? groups.value.length : 0,
+        openAlerts:   openAlerts.status === "fulfilled" ? openAlerts.value.length : 0,
+      });
+    });
+  }, [token]);
 
   const platformHealth = [
     ["Members on file", Math.min(100, (s.total_members || 0) * 10), "cyan"],
@@ -102,6 +121,26 @@ export function Dashboard({ stats, reassessments, onRefresh, onSelectMember }) {
           </div>
         ))}
       </div>
+
+      {/* Phase 2 KPIs */}
+      {p2Stats && (
+        <div className="stats-grid" style={{ marginBottom: 22, gridTemplateColumns: "repeat(2, minmax(0, 1fr))" }}>
+          <div className="stat-card purple">
+            <div className="stat-card-top">
+              <span className="stat-card-label">Active Groups</span>
+              <span className="stat-icon">🏋️</span>
+            </div>
+            <div className="stat-value">{p2Stats.activeGroups}</div>
+          </div>
+          <div className={`stat-card ${p2Stats.openAlerts > 0 ? "danger" : "lime"}`}>
+            <div className="stat-card-top">
+              <span className="stat-card-label">Open Alerts</span>
+              <span className="stat-icon">🔔</span>
+            </div>
+            <div className="stat-value">{p2Stats.openAlerts}</div>
+          </div>
+        </div>
+      )}
 
       <div className="dashboard-lower">
         {/* Recent members + platform health */}

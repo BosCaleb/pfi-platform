@@ -87,20 +87,103 @@ export const STEP_REQUIRED = [
   ],
 ];
 
-export const TAB_ITEMS = [
-  { id: "dashboard",  icon: "⚡",  label: "Dashboard" },
-  { id: "intake",     icon: "➕",  label: "Member Intake" },
-  { id: "members",    icon: "👥",  label: "Members" },
-  { id: "tracking",   icon: "📈",  label: "Tracking" },
-  // Phase 2 — Workout Intelligence
-  { id: "groups",     icon: "🏋️", label: "Groups" },
-  { id: "exercises",  icon: "📚",  label: "Exercises" },
-  { id: "plans",      icon: "🗂",  label: "Plans" },
-  { id: "sessions",   icon: "🎯",  label: "Sessions" },
-  { id: "alerts",     icon: "🔔",  label: "Alerts" },
-  // Phase 3.1 — Check-Ins & Coaching Intelligence
-  { id: "check-ins",  icon: "✅",  label: "Check-Ins" },
-  { id: "tasks",      icon: "📋",  label: "Coach Tasks" },
-  { id: "pain-flags", icon: "🚩",  label: "Pain & Risk" },
-  { id: "settings",   icon: "⚙️",  label: "Settings" },
+/**
+ * NAV_GROUPS — the source of truth for sidebar navigation.
+ * Each group has an id, label, accent colour, and items array.
+ * The active item uses CSS variable --g (set inline) so the
+ * stylesheet can tint its background/border with the group colour.
+ */
+export const NAV_GROUPS = [
+  {
+    id:    "core",
+    label: "Core",
+    color: "var(--cyan)",
+    items: [
+      { id: "dashboard", icon: "⚡",  label: "Dashboard" },
+      { id: "ops",       icon: "🎛️", label: "Operations" },
+    ],
+  },
+  {
+    id:    "members",
+    label: "Members",
+    color: "var(--lime)",
+    items: [
+      { id: "intake",    icon: "➕",  label: "Member Intake" },
+      { id: "members",   icon: "👥",  label: "Members" },
+      { id: "tracking",  icon: "📈",  label: "Tracking" },
+      { id: "check-ins", icon: "🔰",  label: "Check-Ins" },
+    ],
+  },
+  {
+    id:    "workout",
+    label: "Workout",
+    color: "var(--purple)",
+    items: [
+      { id: "groups",    icon: "🏋️", label: "Groups" },
+      { id: "exercises", icon: "📚",  label: "Exercises" },
+      { id: "plans",     icon: "🗂️", label: "Plans" },
+      { id: "sessions",  icon: "🎯",  label: "Sessions" },
+      { id: "alerts",    icon: "🔔",  label: "Alerts" },
+    ],
+  },
+  {
+    id:    "coaching",
+    label: "Coaching",
+    color: "var(--gold)",
+    items: [
+      { id: "tasks",          icon: "📋",  label: "Coach Tasks" },
+      { id: "pain-flags",     icon: "🚩",  label: "Pain & Risk" },
+      { id: "coaching-intel", icon: "🧠",  label: "Coaching AI" },
+    ],
+  },
+  {
+    id:    "operations",
+    label: "Operations",
+    color: "var(--warn)",
+    items: [
+      { id: "packages",   icon: "📦",  label: "Packages" },
+      { id: "billing",    icon: "💳",  label: "Billing" },
+      { id: "schedule",   icon: "📅",  label: "Schedule" },
+      { id: "attendance", icon: "✅",  label: "Attendance" },
+      { id: "messages",   icon: "📨",  label: "Messages" },
+    ],
+  },
+  {
+    id:    "intelligence",
+    label: "Intelligence",
+    color: "#06b6d4",
+    items: [
+      { id: "ai-coach",    icon: "🤖",  label: "AI Coach" },
+      { id: "ai-plans",    icon: "📝",  label: "AI Plans" },
+      { id: "retention",   icon: "💡",  label: "Retention" },
+      { id: "bi-dashboard",icon: "📊",  label: "BI Dashboard" },
+      { id: "reports",     icon: "📄",  label: "Reports" },
+    ],
+  },
+  {
+    id:    "resources",
+    label: "Resources",
+    color: "#8b5cf6",
+    items: [
+      { id: "content",    icon: "📚",  label: "Content Library" },
+      { id: "equipment",  icon: "🏋️", label: "Equipment" },
+      { id: "milestones", icon: "🏆",  label: "Milestones" },
+    ],
+  },
+  {
+    id:    "admin",
+    label: "Admin",
+    color: "#94a3b8",
+    items: [
+      { id: "staff",        icon: "👔",  label: "Staff" },
+      { id: "gym-config",   icon: "🏗️", label: "Gym Setup" },
+      { id: "integrations", icon: "🔌",  label: "Integrations" },
+      { id: "gym-mgmt",     icon: "🏢",  label: "Gym Management" },
+      { id: "privacy",      icon: "🔒",  label: "Privacy & Data" },
+      { id: "settings",     icon: "⚙️",  label: "Settings" },
+    ],
+  },
 ];
+
+/** Flat list — kept for any legacy code that iterates TAB_ITEMS. */
+export const TAB_ITEMS = NAV_GROUPS.flatMap(g => g.items);

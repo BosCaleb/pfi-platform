@@ -687,3 +687,548 @@ class CheckInAlertEvent(Base):
     coach_task_id = Column(Integer, ForeignKey("coach_tasks.id"), nullable=True)
     pain_flag_id = Column(Integer, ForeignKey("pain_risk_flags.id"), nullable=True)
     created_at = Column(DateTime, default=_utcnow)
+
+
+# ══════════════════════════════════════════════════════════
+#  PHASE 3.2 — Adaptive Coaching Intelligence
+# ══════════════════════════════════════════════════════════
+
+class CoachingRecommendation(Base):
+    __tablename__ = "coaching_recommendations"
+    id = id_column(__tablename__)
+    member_id           = Column(Integer, ForeignKey("members.id"), nullable=False, index=True)
+    workout_group_id    = Column(Integer, ForeignKey("workout_groups.id"), nullable=True)
+    workout_plan_id     = Column(Integer, ForeignKey("workout_plan_templates.id"), nullable=True)
+    recommendation_type = Column(String, nullable=False)
+    # Workout Progression / Workout Regression / Exercise Substitution / Group Change / Deload /
+    # Reassessment / Coach Follow-Up / Nutrition Adjustment / Supplement Review / Safety Review /
+    # Motivation Intervention
+    title               = Column(String, nullable=False)
+    summary             = Column(Text)
+    detailed_reason     = Column(Text)
+    supporting_data_json= Column(Text)  # JSON
+    confidence_score    = Column(Float, default=0.75)
+    severity            = Column(String, default="Medium")  # Low / Medium / High / Critical
+    status              = Column(String, default="Approved") # Approved / Rejected / Applied / Archived
+    generated_by        = Column(String, default="Rule Engine")  # Rule Engine / AI Copilot / Admin
+    reviewed_by_admin_id= Column(Integer, ForeignKey("admins.id"), nullable=True)
+    reviewed_at         = Column(DateTime)
+    rejection_reason    = Column(Text)
+    admin_edit_notes    = Column(Text)
+    created_at          = Column(DateTime, default=_utcnow)
+    updated_at          = Column(DateTime, default=_utcnow, onupdate=_utcnow)
+
+
+class RecommendationAction(Base):
+    __tablename__ = "recommendation_actions"
+    id                = id_column(__tablename__)
+    recommendation_id = Column(Integer, ForeignKey("coaching_recommendations.id"), nullable=False)
+    admin_id          = Column(Integer, ForeignKey("admins.id"), nullable=True)
+    action_type       = Column(String)  # Approved / Edited / Rejected / Applied / Archived
+    action_notes      = Column(Text)
+    previous_value_json = Column(Text)
+    new_value_json    = Column(Text)
+    created_at        = Column(DateTime, default=_utcnow)
+
+
+class AiCoachingInsight(Base):
+    __tablename__ = "ai_coaching_insights"
+    id                      = id_column(__tablename__)
+    member_id               = Column(Integer, ForeignKey("members.id"), nullable=False, index=True)
+    generated_at            = Column(DateTime, default=_utcnow)
+    generated_by_admin_id   = Column(Integer, ForeignKey("admins.id"), nullable=True)
+    summary                 = Column(Text)
+    progress_analysis       = Column(Text)
+    readiness_analysis      = Column(Text)
+    risk_analysis           = Column(Text)
+    adherence_analysis      = Column(Text)
+    nutrition_analysis      = Column(Text)
+    supplement_analysis     = Column(Text)
+    recommended_next_steps  = Column(Text)
+    safety_notes            = Column(Text)
+    confidence_score        = Column(Float, default=0.75)
+    source_data_json        = Column(Text)
+    admin_feedback          = Column(Text)
+    status = Column(String, default="Generated")
+    # Generated / Converted to Recommendation / Dismissed / Archived
+
+
+class MemberPlanAdjustment(Base):
+    __tablename__ = "member_plan_adjustments"
+    id                      = id_column(__tablename__)
+    member_id               = Column(Integer, ForeignKey("members.id"), nullable=False, index=True)
+    recommendation_id       = Column(Integer, ForeignKey("coaching_recommendations.id"), nullable=True)
+    workout_plan_id         = Column(Integer, ForeignKey("workout_plan_templates.id"), nullable=True)
+    adjustment_type         = Column(String)
+    # Progression / Regression / Substitution / Deload / Group Change / Recovery
+    adjustment_details_json = Column(Text)
+    applied_by_admin_id     = Column(Integer, ForeignKey("admins.id"), nullable=True)
+    applied_at              = Column(DateTime, default=_utcnow)
+    effective_from_date     = Column(Date)
+    effective_to_date       = Column(Date)
+    notes                   = Column(Text)
+
+
+class NutritionRecommendation(Base):
+    __tablename__ = "nutrition_recommendations"
+    id                   = id_column(__tablename__)
+    member_id            = Column(Integer, ForeignKey("members.id"), nullable=False, index=True)
+    nutrition_plan_id    = Column(Integer, ForeignKey("nutrition_plans.id"), nullable=True)
+    recommendation_id    = Column(Integer, ForeignKey("coaching_recommendations.id"), nullable=True)
+    recommendation_type  = Column(String)
+    # Calorie Review / Protein Review / Hydration / Meal Timing / Adherence Support / Professional Referral
+    summary              = Column(Text)
+    detailed_reason      = Column(Text)
+    supporting_data_json = Column(Text)
+    safety_notes         = Column(Text)
+    status               = Column(String, default="Approved")
+    reviewed_by_admin_id = Column(Integer, ForeignKey("admins.id"), nullable=True)
+    created_at           = Column(DateTime, default=_utcnow)
+    updated_at           = Column(DateTime, default=_utcnow, onupdate=_utcnow)
+
+
+class SupplementRecommendation(Base):
+    __tablename__ = "supplement_recommendations"
+    id                   = id_column(__tablename__)
+    member_id            = Column(Integer, ForeignKey("members.id"), nullable=False, index=True)
+    supplement_plan_id   = Column(Integer, ForeignKey("supplement_plans.id"), nullable=True)
+    recommendation_id    = Column(Integer, ForeignKey("coaching_recommendations.id"), nullable=True)
+    recommendation_type  = Column(String)
+    # Protein Support Review / Creatine Suitability Review / Hydration Support /
+    # Timing Review / Side Effect Review / Professional Referral / Safety Hold
+    summary              = Column(Text)
+    detailed_reason      = Column(Text)
+    supporting_data_json = Column(Text)
+    safety_notes         = Column(Text)
+    status               = Column(String, default="Approved")
+    reviewed_by_admin_id = Column(Integer, ForeignKey("admins.id"), nullable=True)
+    created_at           = Column(DateTime, default=_utcnow)
+    updated_at           = Column(DateTime, default=_utcnow, onupdate=_utcnow)
+
+
+class CoachNote(Base):
+    __tablename__ = "coach_notes"
+    id                = id_column(__tablename__)
+    member_id         = Column(Integer, ForeignKey("members.id"), nullable=False, index=True)
+    recommendation_id = Column(Integer, ForeignKey("coaching_recommendations.id"), nullable=True)
+    admin_id          = Column(Integer, ForeignKey("admins.id"), nullable=True)
+    note_type         = Column(String, default="Internal")  # Internal / Member Visible
+    note_text         = Column(Text, nullable=False)
+    created_at        = Column(DateTime, default=_utcnow)
+    updated_at        = Column(DateTime, default=_utcnow, onupdate=_utcnow)
+
+
+# ══════════════════════════════════════════════════════════
+#  PHASE 4.1 — Gym Operations, Scheduling & Billing
+# ══════════════════════════════════════════════════════════
+
+class MembershipPackage(Base):
+    __tablename__ = "membership_packages"
+    id                          = id_column(__tablename__)
+    package_name                = Column(String, nullable=False)
+    description                 = Column(Text)
+    package_type                = Column(String)
+    # Monthly / Once-Off / Session Pack / Online Coaching / Assessment Only
+    price                       = Column(Float, nullable=False, default=0.0)
+    billing_frequency           = Column(String)   # Monthly / Weekly / Once-Off / Custom
+    sessions_per_week           = Column(Integer)
+    sessions_per_month          = Column(Integer)
+    total_sessions_in_pack      = Column(Integer)
+    includes_workout_plan       = Column(Boolean, default=False)
+    includes_nutrition_guidance = Column(Boolean, default=False)
+    includes_supplement_guidance= Column(Boolean, default=False)
+    includes_member_portal      = Column(Boolean, default=True)
+    includes_reassessments      = Column(Boolean, default=False)
+    package_status              = Column(String, default="Active")  # Active / Draft / Archived
+    created_at                  = Column(DateTime, default=_utcnow)
+    updated_at                  = Column(DateTime, default=_utcnow, onupdate=_utcnow)
+
+
+class MemberMembership(Base):
+    __tablename__ = "member_memberships"
+    id                      = id_column(__tablename__)
+    member_id               = Column(Integer, ForeignKey("members.id"), nullable=False, index=True)
+    membership_package_id   = Column(Integer, ForeignKey("membership_packages.id"), nullable=True)
+    start_date              = Column(Date)
+    end_date                = Column(Date)
+    renewal_date            = Column(Date)
+    membership_status       = Column(String, default="Active")
+    # Active / Paused / Cancelled / Expired / Trial
+    payment_status          = Column(String, default="Pending")
+    # Paid / Unpaid / Overdue / Partially Paid / Pending
+    sessions_remaining      = Column(Integer)
+    auto_renew              = Column(Boolean, default=True)
+    cancellation_reason     = Column(Text)
+    pause_reason            = Column(Text)
+    admin_notes             = Column(Text)
+    created_at              = Column(DateTime, default=_utcnow)
+    updated_at              = Column(DateTime, default=_utcnow, onupdate=_utcnow)
+
+
+class Invoice(Base):
+    __tablename__ = "invoices"
+    id                    = id_column(__tablename__)
+    member_id             = Column(Integer, ForeignKey("members.id"), nullable=False, index=True)
+    membership_package_id = Column(Integer, ForeignKey("membership_packages.id"), nullable=True)
+    invoice_number        = Column(String, unique=True)
+    invoice_date          = Column(Date)
+    due_date              = Column(Date)
+    amount_due            = Column(Float, nullable=False)
+    amount_paid           = Column(Float, default=0.0)
+    balance_due           = Column(Float)
+    invoice_status        = Column(String, default="Draft")
+    # Draft / Sent / Paid / Partially Paid / Overdue / Cancelled
+    payment_method        = Column(String)  # Cash / EFT / Card / Manual / Other
+    payment_reference     = Column(String)
+    admin_notes           = Column(Text)
+    created_at            = Column(DateTime, default=_utcnow)
+    updated_at            = Column(DateTime, default=_utcnow, onupdate=_utcnow)
+
+
+class Payment(Base):
+    __tablename__ = "payments"
+    id                   = id_column(__tablename__)
+    invoice_id           = Column(Integer, ForeignKey("invoices.id"), nullable=False)
+    member_id            = Column(Integer, ForeignKey("members.id"), nullable=False, index=True)
+    payment_date         = Column(Date)
+    amount               = Column(Float, nullable=False)
+    payment_method       = Column(String)
+    payment_reference    = Column(String)
+    recorded_by_admin_id = Column(Integer, ForeignKey("admins.id"), nullable=True)
+    notes                = Column(Text)
+    created_at           = Column(DateTime, default=_utcnow)
+
+
+class GymSession(Base):
+    __tablename__ = "gym_sessions"
+    id               = id_column(__tablename__)
+    session_title    = Column(String, nullable=False)
+    session_type     = Column(String)
+    # One-on-One / Group Training / Workout Group / Assessment / Reassessment /
+    # Nutrition Review / Recovery / Open Gym
+    workout_group_id       = Column(Integer, ForeignKey("workout_groups.id"), nullable=True)
+    workout_plan_id        = Column(Integer, ForeignKey("workout_plan_templates.id"), nullable=True)
+    coach_admin_id         = Column(Integer, ForeignKey("admins.id"), nullable=True)
+    session_date           = Column(Date, nullable=False)
+    start_time             = Column(String)     # HH:MM
+    end_time               = Column(String)     # HH:MM
+    capacity               = Column(Integer, default=1)
+    booked_count           = Column(Integer, default=0)
+    location               = Column(String)
+    session_status         = Column(String, default="Scheduled")
+    # Scheduled / Completed / Cancelled / Rescheduled
+    notes                  = Column(Text)
+    created_at             = Column(DateTime, default=_utcnow)
+    updated_at             = Column(DateTime, default=_utcnow, onupdate=_utcnow)
+
+
+class SessionBooking(Base):
+    __tablename__ = "session_bookings"
+    id                  = id_column(__tablename__)
+    session_id          = Column(Integer, ForeignKey("gym_sessions.id"), nullable=False)
+    member_id           = Column(Integer, ForeignKey("members.id"), nullable=False)
+    booking_status      = Column(String, default="Booked")
+    # Booked / Waitlisted / Cancelled / Completed / No-Show
+    booked_by           = Column(String, default="Admin")   # Admin / Member
+    booking_date        = Column(Date)
+    cancellation_reason = Column(Text)
+    cancelled_at        = Column(DateTime)
+    notes               = Column(Text)
+    created_at          = Column(DateTime, default=_utcnow)
+    updated_at          = Column(DateTime, default=_utcnow, onupdate=_utcnow)
+
+
+class AttendanceRecord(Base):
+    __tablename__ = "attendance_records"
+    id                  = id_column(__tablename__)
+    session_id          = Column(Integer, ForeignKey("gym_sessions.id"), nullable=False)
+    member_id           = Column(Integer, ForeignKey("members.id"), nullable=False)
+    attendance_status   = Column(String)
+    # Attended / No-Show / Cancelled Late / Cancelled Early / Excused
+    check_in_time       = Column(DateTime)
+    marked_by_admin_id  = Column(Integer, ForeignKey("admins.id"), nullable=True)
+    attendance_notes    = Column(Text)
+    created_at          = Column(DateTime, default=_utcnow)
+    updated_at          = Column(DateTime, default=_utcnow, onupdate=_utcnow)
+
+
+class AdminRole(Base):
+    __tablename__ = "admin_roles"
+    id               = id_column(__tablename__)
+    role_name        = Column(String, nullable=False)
+    description      = Column(Text)
+    permissions_json = Column(Text)  # JSON list of permission keys
+    created_at       = Column(DateTime, default=_utcnow)
+    updated_at       = Column(DateTime, default=_utcnow, onupdate=_utcnow)
+
+
+class AdminUserRole(Base):
+    __tablename__ = "admin_user_roles"
+    id                   = id_column(__tablename__)
+    admin_id             = Column(Integer, ForeignKey("admins.id"), nullable=False)
+    role_id              = Column(Integer, ForeignKey("admin_roles.id"), nullable=False)
+    assigned_by_admin_id = Column(Integer, ForeignKey("admins.id"), nullable=True)
+    created_at           = Column(DateTime, default=_utcnow)
+
+
+class CommunicationMessage(Base):
+    __tablename__ = "communication_messages"
+    id                  = id_column(__tablename__)
+    sender_admin_id     = Column(Integer, ForeignKey("admins.id"), nullable=True)
+    recipient_member_id = Column(Integer, ForeignKey("members.id"), nullable=True, index=True)
+    recipient_group_id  = Column(Integer, ForeignKey("workout_groups.id"), nullable=True)
+    message_type        = Column(String)
+    # Direct Message / Announcement / Payment Reminder / Booking Reminder /
+    # Reassessment Reminder / Workout Reminder / Nutrition Reminder / General Update
+    subject             = Column(String)
+    message_body        = Column(Text)
+    visible_in_member_portal = Column(Boolean, default=True)
+    delivery_channel    = Column(String, default="In-App")
+    # In-App / Email Placeholder / SMS Placeholder / WhatsApp Placeholder
+    message_status      = Column(String, default="Sent")   # Draft / Sent / Read / Archived
+    sent_at             = Column(DateTime, default=_utcnow)
+    read_at             = Column(DateTime)
+    created_at          = Column(DateTime, default=_utcnow)
+    updated_at          = Column(DateTime, default=_utcnow, onupdate=_utcnow)
+
+
+class MessageTemplate(Base):
+    __tablename__ = "message_templates"
+    id            = id_column(__tablename__)
+    template_name = Column(String, nullable=False)
+    template_type = Column(String)
+    subject       = Column(String)
+    body          = Column(Text)
+    created_at    = Column(DateTime, default=_utcnow)
+    updated_at    = Column(DateTime, default=_utcnow, onupdate=_utcnow)
+
+
+class GymSettings(Base):
+    __tablename__ = "gym_settings"
+    id                                = id_column(__tablename__)
+    gym_name                          = Column(String, default="My Gym")
+    contact_email                     = Column(String)
+    contact_phone                     = Column(String)
+    location                          = Column(String)
+    operating_hours                   = Column(Text)   # plain text or JSON
+    default_session_duration          = Column(Integer, default=60)
+    default_cancellation_window_hours = Column(Integer, default=24)
+    default_session_capacity          = Column(Integer, default=1)
+    currency                          = Column(String, default="ZAR")
+    invoice_prefix                    = Column(String, default="INV")
+    timezone                          = Column(String, default="Africa/Johannesburg")
+    membership_terms                  = Column(Text)
+    cancellation_policy               = Column(Text)
+    privacy_policy                    = Column(Text)
+    created_at                        = Column(DateTime, default=_utcnow)
+    updated_at                        = Column(DateTime, default=_utcnow, onupdate=_utcnow)
+
+
+# ══════════════════════════════════════════════════════════════════
+#  PHASE 4.2 — Advanced Intelligence, Reports, Retention & Scaling
+# ══════════════════════════════════════════════════════════════════
+
+class AiCoachOutput(Base):
+    __tablename__ = "ai_coach_outputs"
+    id                      = id_column(__tablename__)
+    member_id               = Column(Integer, ForeignKey("members.id"), nullable=True, index=True)
+    workout_group_id        = Column(Integer, ForeignKey("workout_groups.id"), nullable=True)
+    admin_id                = Column(Integer, ForeignKey("admins.id"), nullable=True)
+    output_type             = Column(String, nullable=False)
+    prompt_context_snapshot = Column(Text)   # JSON snapshot of data used for generation
+    generated_output        = Column(Text)   # The drafted content
+    supporting_data_summary = Column(Text)
+    risk_flags              = Column(Text)
+    status                  = Column(String, default="Draft")
+    # Draft / Pending Review / Approved / Edited / Rejected / Applied / Archived
+    admin_notes             = Column(Text)
+    created_at              = Column(DateTime, default=_utcnow)
+    updated_at              = Column(DateTime, default=_utcnow, onupdate=_utcnow)
+
+
+class AiGeneratedPlanDraft(Base):
+    __tablename__ = "ai_generated_plan_drafts"
+    id                   = id_column(__tablename__)
+    member_id            = Column(Integer, ForeignKey("members.id"), nullable=True)
+    workout_group_id     = Column(Integer, ForeignKey("workout_groups.id"), nullable=True)
+    generated_for        = Column(String, default="Member")   # Member / Group
+    plan_goal            = Column(String)
+    plan_duration_weeks  = Column(Integer, default=4)
+    generated_plan_json  = Column(Text)   # Full plan structure as JSON
+    safety_flags         = Column(Text)
+    status               = Column(String, default="Draft")
+    # Draft / Under Review / Approved / Converted to Workout Plan / Rejected
+    reviewed_by_admin_id = Column(Integer, ForeignKey("admins.id"), nullable=True)
+    reviewed_at          = Column(DateTime)
+    created_at           = Column(DateTime, default=_utcnow)
+    updated_at           = Column(DateTime, default=_utcnow, onupdate=_utcnow)
+
+
+class MemberRetentionScore(Base):
+    __tablename__ = "member_retention_scores"
+    id                          = id_column(__tablename__)
+    member_id                   = Column(Integer, ForeignKey("members.id"), nullable=False, index=True)
+    score                       = Column(Float, default=0.0)   # 0–100; higher = more at risk
+    risk_category               = Column(String, default="Low")
+    # Low / Medium / High / Critical
+    missed_session_component    = Column(Float, default=0.0)
+    attendance_component        = Column(Float, default=0.0)
+    payment_component           = Column(Float, default=0.0)
+    engagement_component        = Column(Float, default=0.0)
+    motivation_component        = Column(Float, default=0.0)
+    workout_adherence_component = Column(Float, default=0.0)
+    check_in_component          = Column(Float, default=0.0)
+    readiness_component         = Column(Float, default=0.0)
+    risk_reason                 = Column(Text)
+    suggested_action            = Column(Text)
+    created_at                  = Column(DateTime, default=_utcnow)
+
+
+class MemberReport(Base):
+    __tablename__ = "member_reports"
+    id                    = id_column(__tablename__)
+    member_id             = Column(Integer, ForeignKey("members.id"), nullable=False, index=True)
+    report_type           = Column(String, nullable=False)
+    date_range_start      = Column(Date)
+    date_range_end        = Column(Date)
+    report_title          = Column(String)
+    report_summary        = Column(Text)
+    report_data_snapshot  = Column(Text)   # JSON
+    ai_summary            = Column(Text)
+    coach_final_notes     = Column(Text)
+    status                = Column(String, default="Draft")
+    # Draft / Reviewed / Final / Shared with Member / Archived
+    generated_by_admin_id = Column(Integer, ForeignKey("admins.id"), nullable=True)
+    shared_with_member    = Column(Boolean, default=False)
+    shared_at             = Column(DateTime)
+    created_at            = Column(DateTime, default=_utcnow)
+    updated_at            = Column(DateTime, default=_utcnow, onupdate=_utcnow)
+
+
+class ContentResource(Base):
+    __tablename__ = "content_resources"
+    id                      = id_column(__tablename__)
+    title                   = Column(String, nullable=False)
+    resource_type           = Column(String)   # Video / Article / PDF / Link / Image / Checklist
+    category                = Column(String)
+    # Exercise / Nutrition / Supplement / Recovery / Mobility / Onboarding / Motivation / Safety
+    description             = Column(Text)
+    content_body            = Column(Text)
+    external_url            = Column(String)
+    file_url                = Column(String)
+    linked_exercise_id      = Column(Integer, ForeignKey("exercise_library.id"), nullable=True)
+    linked_goal             = Column(String)
+    linked_workout_group_id = Column(Integer, ForeignKey("workout_groups.id"), nullable=True)
+    visible_to_members      = Column(Boolean, default=False)
+    created_by_admin_id     = Column(Integer, ForeignKey("admins.id"), nullable=True)
+    status                  = Column(String, default="Draft")   # Draft / Published / Archived
+    created_at              = Column(DateTime, default=_utcnow)
+    updated_at              = Column(DateTime, default=_utcnow, onupdate=_utcnow)
+
+
+class MemberResourceAssignment(Base):
+    __tablename__ = "member_resource_assignments"
+    id                   = id_column(__tablename__)
+    member_id            = Column(Integer, ForeignKey("members.id"), nullable=False, index=True)
+    resource_id          = Column(Integer, ForeignKey("content_resources.id"), nullable=False)
+    assigned_by_admin_id = Column(Integer, ForeignKey("admins.id"), nullable=True)
+    viewed               = Column(Boolean, default=False)
+    viewed_at            = Column(DateTime)
+    notes                = Column(Text)
+    created_at           = Column(DateTime, default=_utcnow)
+
+
+class EquipmentInventory(Base):
+    __tablename__ = "equipment_inventory"
+    id                = id_column(__tablename__)
+    equipment_name    = Column(String, nullable=False)
+    category          = Column(String)
+    # Cardio / Strength / Free Weights / Machine / Bands / Mobility / Recovery / Other
+    quantity          = Column(Integer, default=1)
+    status            = Column(String, default="Available")
+    # Available / Limited / Maintenance / Unavailable
+    location          = Column(String)
+    purchase_date     = Column(Date)
+    maintenance_notes = Column(Text)
+    replacement_notes = Column(Text)
+    created_at        = Column(DateTime, default=_utcnow)
+    updated_at        = Column(DateTime, default=_utcnow, onupdate=_utcnow)
+
+
+class MemberMilestone(Base):
+    __tablename__ = "member_milestones"
+    id                    = id_column(__tablename__)
+    member_id             = Column(Integer, ForeignKey("members.id"), nullable=False, index=True)
+    milestone_type        = Column(String)
+    milestone_title       = Column(String, nullable=False)
+    milestone_description = Column(Text)
+    achieved_at           = Column(DateTime, default=_utcnow)
+    related_metric        = Column(String)
+    visible_to_member     = Column(Boolean, default=True)
+    created_at            = Column(DateTime, default=_utcnow)
+
+
+class IntegrationSetting(Base):
+    __tablename__ = "integration_settings"
+    id                        = id_column(__tablename__)
+    integration_name          = Column(String, nullable=False, unique=True)
+    integration_type          = Column(String)
+    # Calendar / Payment / Messaging / Wearable / Email / Other
+    enabled                   = Column(Boolean, default=False)
+    configuration_placeholder = Column(Text)   # JSON config placeholder
+    status                    = Column(String, default="Not Configured")
+    # Not Configured / Configured / Error / Disabled
+    created_at                = Column(DateTime, default=_utcnow)
+    updated_at                = Column(DateTime, default=_utcnow, onupdate=_utcnow)
+
+
+class IntegrationEventLog(Base):
+    __tablename__ = "integration_event_logs"
+    id               = id_column(__tablename__)
+    integration_name = Column(String, nullable=False)
+    event_type       = Column(String)
+    event_payload    = Column(Text)   # JSON
+    status           = Column(String)   # Success / Failed / Pending
+    error_message    = Column(Text)
+    created_at       = Column(DateTime, default=_utcnow)
+
+
+class Gym(Base):
+    __tablename__ = "gyms"
+    id             = id_column(__tablename__)
+    gym_name       = Column(String, nullable=False)
+    owner_admin_id = Column(Integer, ForeignKey("admins.id"), nullable=True)
+    brand_colour   = Column(String)
+    logo_url       = Column(String)
+    status         = Column(String, default="Active")
+    # Active / Trial / Suspended / Archived
+    created_at     = Column(DateTime, default=_utcnow)
+    updated_at     = Column(DateTime, default=_utcnow, onupdate=_utcnow)
+
+
+class GymLocation(Base):
+    __tablename__ = "gym_locations"
+    id              = id_column(__tablename__)
+    gym_id          = Column(Integer, ForeignKey("gyms.id"), nullable=True)
+    location_name   = Column(String, nullable=False)
+    address         = Column(Text)
+    contact_number  = Column(String)
+    operating_hours = Column(Text)
+    capacity        = Column(Integer)
+    created_at      = Column(DateTime, default=_utcnow)
+    updated_at      = Column(DateTime, default=_utcnow, onupdate=_utcnow)
+
+
+class MemberDataRequest(Base):
+    __tablename__ = "member_data_requests"
+    id                    = id_column(__tablename__)
+    member_id             = Column(Integer, ForeignKey("members.id"), nullable=False, index=True)
+    request_type          = Column(String)
+    # Export / Correction / Deactivation / Deletion Review
+    request_status        = Column(String, default="Open")
+    # Open / In Progress / Completed / Rejected
+    requested_by          = Column(String, default="Admin")   # Member / Admin
+    notes                 = Column(Text)
+    completed_by_admin_id = Column(Integer, ForeignKey("admins.id"), nullable=True)
+    created_at            = Column(DateTime, default=_utcnow)
+    completed_at          = Column(DateTime)

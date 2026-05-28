@@ -16,6 +16,9 @@ import { TAB_ITEMS, emptyProfile }     from "./constants.js";
 import { request, cleanPayload, numericOrNull } from "./utils/api.js";
 import { cloneProfile, today, unique, pick }    from "./utils/helpers.js";
 
+// ── Navigation ───────────────────────────────────────────────────────
+import { SideNav }              from "./components/SideNav.jsx";
+
 // ── Page components ──────────────────────────────────────────────────
 import { Landing }              from "./components/Landing.jsx";
 import { Disclaimers }          from "./components/Disclaimers.jsx";
@@ -24,12 +27,37 @@ import { Disclaimers }          from "./components/Disclaimers.jsx";
 import { CheckInDashboard }     from "./components/CheckInDashboard.jsx";
 import { CoachTasks }           from "./components/CoachTasks.jsx";
 import { PainFlags }            from "./components/PainFlags.jsx";
+// Phase 3.2 — Adaptive Coaching Intelligence
+import { CoachingIntelligence } from "./components/CoachingIntelligence.jsx";
 import { Login }                from "./components/Login.jsx";
 import { Dashboard }            from "./components/Dashboard.jsx";
 import { Intake }               from "./components/Intake.jsx";
 import { Members }              from "./components/Members.jsx";
 import { Tracking }             from "./components/Tracking.jsx";
 import { Settings }             from "./components/Settings.jsx";
+
+// Phase 4.1 — Gym Operations, Scheduling, Attendance and Billing
+import { OperationsDashboard }  from "./components/OperationsDashboard.jsx";
+import { MembershipPackages }   from "./components/MembershipPackages.jsx";
+import { Billing }              from "./components/Billing.jsx";
+import { SessionCalendar }      from "./components/SessionCalendar.jsx";
+import { AttendancePage }       from "./components/AttendancePage.jsx";
+import { Communications }       from "./components/Communications.jsx";
+import { StaffRoles }           from "./components/StaffRoles.jsx";
+import { GymSetup }             from "./components/GymSetup.jsx";
+
+// Phase 4.2 — Advanced Intelligence, Reports, Retention and Scaling
+import AiCoachAssistant   from "./components/AiCoachAssistant.jsx";
+import AiPlanDrafts       from "./components/AiPlanDrafts.jsx";
+import RetentionDashboard from "./components/RetentionDashboard.jsx";
+import BusinessIntelligence from "./components/BusinessIntelligence.jsx";
+import ReportsPage        from "./components/ReportsPage.jsx";
+import ContentLibrary     from "./components/ContentLibrary.jsx";
+import EquipmentManagement from "./components/EquipmentManagement.jsx";
+import MilestonesAdmin    from "./components/MilestonesAdmin.jsx";
+import IntegrationsPage   from "./components/IntegrationsPage.jsx";
+import GymManagement      from "./components/GymManagement.jsx";
+import PrivacyExport      from "./components/PrivacyExport.jsx";
 
 // Phase 2 — Workout Intelligence
 import { WorkoutGroups }        from "./components/WorkoutGroups.jsx";
@@ -356,19 +384,9 @@ function App() {
         )}
         {view === "app" && (
           <section className="workspace">
-            <nav className="tabs" aria-label="Workspace">
-              {TAB_ITEMS.map(({ id, icon, label }) => (
-                <button
-                  key={id}
-                  className={`tab ${tab === id ? "active" : ""}`}
-                  type="button"
-                  onClick={() => setTab(id)}
-                >
-                  <span className="tab-icon">{icon}</span>{label}
-                </button>
-              ))}
-            </nav>
+            <SideNav tab={tab} setTab={setTab} />
 
+            <div className="workspace-content">
             {tab === "dashboard" && (
               <Dashboard
                 stats={dashboard}
@@ -400,6 +418,7 @@ function App() {
                 onFilter={nf => { setFilters(nf); loadMembers(nf); }}
                 onRefresh={() => loadMembers()}
                 onSelect={showMember}
+                onClose={() => setSelected(null)}
                 onEdit={editMember}
                 onDeleteMember={deleteMember}
                 onDeleteAssessment={deleteAssessment}
@@ -424,10 +443,34 @@ function App() {
             {/* Phase 3.1 — Check-Ins & Coaching Intelligence */}
             {tab === "check-ins"  && <CheckInDashboard token={token} members={members} />}
             {tab === "tasks"      && <CoachTasks        token={token} members={members} />}
-            {tab === "pain-flags" && <PainFlags         token={token} members={members} />}
+            {tab === "pain-flags" && <PainFlags             token={token} members={members} />}
+            {/* Phase 3.2 — Coaching Intelligence */}
+            {tab === "coaching-intel" && <CoachingIntelligence token={token} members={members} />}
+            {/* Phase 4.1 — Gym Operations, Scheduling, Attendance and Billing */}
+            {tab === "ops"        && <OperationsDashboard token={token} />}
+            {tab === "packages"   && <MembershipPackages  token={token} />}
+            {tab === "billing"    && <Billing             token={token} members={members} />}
+            {tab === "schedule"   && <SessionCalendar     token={token} members={members} />}
+            {tab === "attendance" && <AttendancePage      token={token} members={members} />}
+            {tab === "messages"   && <Communications      token={token} members={members} />}
+            {tab === "staff"      && <StaffRoles          token={token} />}
+            {tab === "gym-config" && <GymSetup            token={token} />}
             {tab === "settings" && (
               <Settings settings={settings} token={token} onRefresh={loadSettings} />
             )}
+            {/* Phase 4.2 — Advanced Intelligence, Reports, Retention and Scaling */}
+            {tab === "ai-coach"     && <AiCoachAssistant    token={token} />}
+            {tab === "ai-plans"     && <AiPlanDrafts         token={token} />}
+            {tab === "retention"    && <RetentionDashboard   token={token} />}
+            {tab === "bi-dashboard" && <BusinessIntelligence token={token} />}
+            {tab === "reports"      && <ReportsPage          token={token} />}
+            {tab === "content"      && <ContentLibrary       token={token} />}
+            {tab === "equipment"    && <EquipmentManagement  token={token} />}
+            {tab === "milestones"   && <MilestonesAdmin      token={token} />}
+            {tab === "integrations" && <IntegrationsPage     token={token} />}
+            {tab === "gym-mgmt"     && <GymManagement        token={token} />}
+            {tab === "privacy"      && <PrivacyExport        token={token} />}
+            </div>{/* workspace-content */}
           </section>
         )}
       </main>

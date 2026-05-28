@@ -47,6 +47,37 @@ from app.routers import (
     pain_flags,
     nutrition_logs,
     member_portal,
+    # Phase 3.2 — Adaptive Coaching Intelligence
+    coaching_recommendations,
+    ai_insights,
+    coach_notes,
+)
+# Phase 4.1 — Gym Operations, Scheduling, Attendance and Billing
+from app.routers import (
+    membership_packages,
+    member_memberships,
+    billing,
+    gym_sessions_router,
+    session_bookings,
+    attendance_router,
+    communications,
+    admin_roles,
+    gym_settings_router,
+    operations_dashboard,
+)
+# Phase 4.2 — Advanced Intelligence, Reports, Retention and Scaling
+from app.routers import (
+    ai_coach_router,
+    ai_plan_drafts_router,
+    retention_router,
+    bi_dashboard_router,
+    reports_router,
+    content_library_router,
+    equipment_router,
+    milestones_router,
+    integrations_router,
+    gym_management_router,
+    privacy_router,
 )
 
 # ------------------------------------------------------------------ #
@@ -265,6 +296,35 @@ app.include_router(coach_tasks.router)
 app.include_router(pain_flags.router)
 app.include_router(nutrition_logs.router)
 app.include_router(member_portal.router)
+# Phase 3.2 — Adaptive Coaching Intelligence
+app.include_router(coaching_recommendations.router)
+app.include_router(ai_insights.router)
+app.include_router(coach_notes.router)
+
+# Phase 4.1 — Gym Operations, Scheduling, Attendance and Billing
+app.include_router(membership_packages.router)
+app.include_router(member_memberships.router)
+app.include_router(billing.router)
+app.include_router(gym_sessions_router.router)
+app.include_router(session_bookings.router)
+app.include_router(attendance_router.router)
+app.include_router(communications.router)
+app.include_router(admin_roles.router)
+app.include_router(gym_settings_router.router)
+app.include_router(operations_dashboard.router)
+
+# Phase 4.2 — Advanced Intelligence, Reports, Retention and Scaling
+app.include_router(ai_coach_router.router)
+app.include_router(ai_plan_drafts_router.router)
+app.include_router(retention_router.router)
+app.include_router(bi_dashboard_router.router)
+app.include_router(reports_router.router)
+app.include_router(content_library_router.router)
+app.include_router(equipment_router.router)
+app.include_router(milestones_router.router)
+app.include_router(integrations_router.router)
+app.include_router(gym_management_router.router)
+app.include_router(privacy_router.router)
 
 
 # ------------------------------------------------------------------ #

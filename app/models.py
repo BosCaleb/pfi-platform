@@ -57,6 +57,10 @@ class Member(Base):
     consent_ai_recommendations   = Column(Boolean, default=False)
     consent_terms_accepted       = Column(Boolean, default=False)
     consent_signed_at = Column(DateTime, nullable=True)
+    # Member portal credentials
+    portal_password   = Column(String, nullable=True)   # bcrypt-hashed; NULL = no portal access
+    portal_enabled    = Column(Boolean, default=False)  # admin must enable before member can log in
+    portal_last_login = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=_utcnow)
     updated_at = Column(DateTime, default=_utcnow, onupdate=_utcnow)
 

@@ -73,7 +73,7 @@ export function MemberDetail({ member, token, onEdit, onDeleteMember, onDeleteAs
       {innerTab === "workout"   && <WorkoutTab    member={member} token={token} />}
       {innerTab === "readiness" && <ReadinessTab             member={member} token={token} />}
       {innerTab === "coaching"  && <CoachingIntelligenceTab member={member} token={token} />}
-      {innerTab === "manage"    && <ManageTab               member={member} onEdit={onEdit} onDeleteMember={onDeleteMember} />}
+      {innerTab === "manage"    && <ManageTab               member={member} token={token} onEdit={onEdit} onDeleteMember={onDeleteMember} />}
     </>
   );
 }

@@ -2084,6 +2084,86 @@ legend { display: none; }
 .danger-zone h4 { color: var(--danger); margin-bottom: 8px; }
 .danger-zone p  { color: var(--muted); font-size: 12px; line-height: 1.6; margin-bottom: 14px; }
 
+/* ── Portal Access section (ManageTab) ───────────────── */
+.portal-access-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.portal-status-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.portal-status-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 90px;
+}
+
+.portal-status-label {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .4px;
+}
+
+.portal-status-badge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  width: fit-content;
+}
+
+.portal-status-badge.enabled {
+  background: rgba(0,255,136,.1);
+  color: var(--success);
+  border: 1px solid rgba(0,255,136,.25);
+}
+
+.portal-status-badge.disabled {
+  background: rgba(255,77,109,.1);
+  color: var(--danger);
+  border: 1px solid rgba(255,77,109,.2);
+}
+
+.portal-status-value {
+  font-size: 12px;
+  color: var(--text);
+}
+
+.portal-url-note {
+  font-size: 12px;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 10px;
+}
+
+.portal-url-note code {
+  color: var(--accent);
+  font-family: monospace;
+  font-size: 11px;
+}
+
+.portal-action-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.portal-pw-form {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+}
+
 /* ── Confirm overlay ─────────────────────────────────── */
 .confirm-overlay {
   align-items: center;

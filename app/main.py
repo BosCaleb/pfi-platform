@@ -79,6 +79,8 @@ from app.routers import (
     gym_management_router,
     privacy_router,
 )
+# Member Portal
+from app.routers import member_auth, member_self_service
 
 # ------------------------------------------------------------------ #
 # Logging                                                              #
@@ -142,6 +144,16 @@ def _ensure_member_consent_columns() -> None:
         ),
         "consent_terms_accepted": (
             "ALTER TABLE members ADD COLUMN consent_terms_accepted BOOLEAN DEFAULT false"
+        ),
+        # Member portal access
+        "portal_password": (
+            "ALTER TABLE members ADD COLUMN portal_password VARCHAR"
+        ),
+        "portal_enabled": (
+            "ALTER TABLE members ADD COLUMN portal_enabled BOOLEAN DEFAULT false"
+        ),
+        "portal_last_login": (
+            "ALTER TABLE members ADD COLUMN portal_last_login TIMESTAMP"
         ),
     }
 
@@ -326,12 +338,18 @@ app.include_router(integrations_router.router)
 app.include_router(gym_management_router.router)
 app.include_router(privacy_router.router)
 
+# Member Portal — auth + self-service (member-scoped JWT)
+app.include_router(member_auth.router)
+app.include_router(member_self_service.router)
+
 
 # ------------------------------------------------------------------ #
 # Static SPA                                                           #
 # ------------------------------------------------------------------ #
 
-app.mount("/ui", StaticFiles(directory="app/static", html=True), name="ui")
+app.mount("/ui",     StaticFiles(directory="app/static", html=True), name="ui")
+# Member portal served at /portal — same SPA build, JS detects URL and renders portal view
+app.mount("/portal", StaticFiles(directory="app/static", html=True), name="portal")
 
 
 # ------------------------------------------------------------------ #

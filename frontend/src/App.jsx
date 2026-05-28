@@ -46,6 +46,9 @@ import { Communications }       from "./components/Communications.jsx";
 import { StaffRoles }           from "./components/StaffRoles.jsx";
 import { GymSetup }             from "./components/GymSetup.jsx";
 
+// Member Portal
+import MemberPortalApp    from "./components/portal/MemberPortalApp.jsx";
+
 // Phase 4.2 — Advanced Intelligence, Reports, Retention and Scaling
 import AiCoachAssistant   from "./components/AiCoachAssistant.jsx";
 import AiPlanDrafts       from "./components/AiPlanDrafts.jsx";
@@ -68,7 +71,13 @@ import { ReassessmentAlerts }   from "./components/ReassessmentAlerts.jsx";
 
 // ── App ──────────────────────────────────────────────────────────────
 
+// Detect member portal URL — served at /portal/*
+const IS_PORTAL = window.location.pathname.startsWith("/portal");
+
 function App() {
+  // ── Member portal shortcut ────────────────────────────────────────
+  if (IS_PORTAL) return <MemberPortalApp />;
+
   // Auth
   const [token, setToken] = useState(localStorage.getItem("pfi_token") || "");
   const [admin, setAdmin] = useState(JSON.parse(localStorage.getItem("pfi_admin") || "null"));

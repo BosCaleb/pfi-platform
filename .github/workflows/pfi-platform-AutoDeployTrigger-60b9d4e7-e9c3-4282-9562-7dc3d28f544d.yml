@@ -1,0 +1,49 @@
+name: Trigger auto deployment for pfi-platform
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ master ]
+    paths:
+    - '**'
+    - '.github/workflows/pfi-platform-AutoDeployTrigger-60b9d4e7-e9c3-4282-9562-7dc3d28f544d.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+      contents: read #Required when GH token is used to authenticate with private repo
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.PFIPLATFORM_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.PFIPLATFORM_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.PFIPLATFORM_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}
+          _dockerfilePathKey_: _dockerfilePath_
+          _targetLabelKey_: _targetLabel_
+          registryUrl: statreg.azurecr.io
+          registryUsername: ${{ secrets.PFIPLATFORM_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.PFIPLATFORM_REGISTRY_PASSWORD }}
+          containerAppName: pfi-platform
+          resourceGroup: pfi-rg
+          imageToBuild: statreg.azurecr.io/pfi-platform:${{ github.sha }}
+          _buildArgumentsKey_: |
+            _buildArgumentsValues_
+
+

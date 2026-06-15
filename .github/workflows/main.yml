@@ -1,0 +1,301 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# PFI Platform — CI/CD Pipeline
+#
+# Trigger: every push to main + every PR targeting main
+#
+# Jobs (in order):
+#   1. test        — install deps, lint, type-check, run all tests
+#   2. build       — build the React frontend, build + push the Docker image
+#   3. deploy      — deploy the new image to Azure Container Apps
+#
+# Jobs 2 and 3 run only on direct pushes to main (not on PRs).
+#
+# Required GitHub secrets:
+#   DOCKERHUB_USERNAME   — Docker Hub account username
+#   DOCKERHUB_TOKEN      — Docker Hub access token (not password)
+#   AZURE_CREDENTIALS    — JSON output of: az ad sp create-for-rbac --sdk-auth
+#   SECRET_KEY           — JWT signing secret for the deployed app
+#   DEFAULT_ADMIN_EMAIL  — Seed admin email
+#   DEFAULT_ADMIN_PASSWORD — Seed admin password
+#
+# Required GitHub variables (Settings → Variables → Actions):
+#   AZURE_RESOURCE_GROUP   — e.g. pfi-rg
+#   AZURE_CONTAINERAPP_NAME — e.g. pfi-platform
+#   DOCKERHUB_USERNAME     — repeated here so it's readable in logs
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: CI/CD → Docker Hub → Azure Container Apps
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+# Cancel in-flight runs for the same branch/PR to avoid queuing
+concurrency:
+  group: cicd-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/pfi-platform
+  PYTHON_VERSION: "3.11"
+  NODE_VERSION: "20"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Job 1 — Test
+# Runs on every push and every PR.
+# ─────────────────────────────────────────────────────────────────────────────
+jobs:
+  test:
+    name: "Test (lint · type-check · unit · smoke · migrations)"
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1.1 Source ─────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 1.2 Python ─────────────────────────────────────────────────────────
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      # ── 1.3 Install dependencies ───────────────────────────────────────────
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      # ── 1.4 Lint (ruff) ────────────────────────────────────────────────────
+      - name: "Lint — ruff check"
+        run: ruff check .
+
+      # ── 1.5 Format check (ruff) ────────────────────────────────────────────
+      - name: "Lint — ruff format check"
+        run: ruff format --check .
+
+      # ── 1.6 Type check (mypy) ──────────────────────────────────────────────
+      - name: "Type check — mypy"
+        run: mypy app/
+        # mypy is configured in pyproject.toml [tool.mypy]
+        # lenient settings: ignores missing stubs, doesn't require all functions
+        # to be annotated — catches real type bugs without breaking existing code
+
+      # ── 1.7 Run all tests ──────────────────────────────────────────────────
+      # Tests:
+      #   test_auth.py       — unit: JWT + password hashing
+      #   test_computed.py   — unit: BMI, risk, segment logic
+      #   test_migrations.py — integration: schema validation (in-memory DuckDB)
+      #   test_smoke.py      — integration: HTTP smoke tests via TestClient
+      - name: "Test — pytest (unit + smoke + migrations)"
+        env:
+          DATABASE_URL: "duckdb:///:memory:"
+          SECRET_KEY: "ci-test-secret-do-not-use-in-production-min32chars!!"
+          ALLOW_ADMIN_SEED: "true"
+          DEFAULT_ADMIN_EMAIL: "admin@pfi-platform.local"
+          DEFAULT_ADMIN_PASSWORD: "admin123"
+          LOG_LEVEL: "warning"   # suppress INFO noise in test output
+        run: |
+          pytest \
+            --cov=app \
+            --cov-report=xml \
+            --cov-report=term-missing \
+            -v
+
+      # ── 1.8 Upload coverage ────────────────────────────────────────────────
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report-${{ github.run_id }}
+          path: coverage.xml
+          retention-days: 14
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Job 2 — Build & Push Docker image
+  # Runs only on direct pushes to main (not on PRs).
+  # ───────────────────────────────────────────────────────────────────────────
+  build:
+    name: "Build & Push Docker image"
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    outputs:
+      # Pass the exact image tag to the deploy job so it deploys the image
+      # built in this run — not "latest" from a different commit.
+      image-tag: ${{ steps.meta.outputs.version }}
+
+    steps:
+      # ── 2.1 Source ─────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2.2 Node (frontend build happens inside Docker, but we validate
+      #        the frontend compiles cleanly before spending build minutes) ────
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci --prefer-offline
+
+      - name: Build frontend (validation)
+        working-directory: frontend
+        run: npm run build
+        # The actual production build runs inside Docker Stage 1.
+        # This step catches JSX/CSS errors before we spend time building
+        # the full multi-stage Docker image.
+
+      # ── 2.3 Docker Buildx ──────────────────────────────────────────────────
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # ── 2.4 Login to Docker Hub ────────────────────────────────────────────
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # ── 2.5 Image tags ─────────────────────────────────────────────────────
+      # Produces two tags on each main push:
+      #   docker.io/<user>/pfi-platform:latest
+      #   docker.io/<user>/pfi-platform:sha-<7-char git SHA>
+      - name: Extract image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest
+            type=sha,prefix=sha-,format=short
+
+      # ── 2.6 Build and push ─────────────────────────────────────────────────
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # GitHub Actions cache → much faster rebuilds on unchanged layers
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # ── 2.7 Summary ────────────────────────────────────────────────────────
+      - name: Print image digest
+        run: |
+          echo "### Docker image pushed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** \`${{ env.IMAGE_NAME }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Tags:** \`${{ steps.meta.outputs.tags }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Digest:** \`${{ steps.build.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Job 3 — Deploy to Azure Container Apps
+  # Runs only after a successful build on main.
+  # ───────────────────────────────────────────────────────────────────────────
+  deploy:
+    name: "Deploy to Azure Container Apps"
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    environment:
+      name: production
+      url: ${{ steps.get-url.outputs.url }}
+
+    steps:
+      # ── 3.1 Azure login ────────────────────────────────────────────────────
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # ── 3.2 Update the container image ─────────────────────────────────────
+      # Uses the sha-tagged image (not "latest") so this deploy is pinned
+      # to exactly the image built in this pipeline run.
+      - name: Deploy new image to Azure Container Apps
+        run: |
+          IMAGE_TAG="sha-$(echo '${{ github.sha }}' | cut -c1-7)"
+
+          az containerapp update \
+            --name "${{ vars.AZURE_CONTAINERAPP_NAME }}" \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --image "${{ env.IMAGE_NAME }}:${IMAGE_TAG}" \
+            --output table
+
+      # ── 3.3 Wait for rollout ───────────────────────────────────────────────
+      - name: Wait for deployment to complete
+        run: |
+          echo "Waiting for revision to become active..."
+          sleep 20
+
+          PROVISION=$(az containerapp show \
+            --name "${{ vars.AZURE_CONTAINERAPP_NAME }}" \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --query "properties.provisioningState" -o tsv)
+
+          REVISION=$(az containerapp show \
+            --name "${{ vars.AZURE_CONTAINERAPP_NAME }}" \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --query "properties.latestRevisionName" -o tsv)
+
+          echo "Provisioning state : $PROVISION"
+          echo "Latest revision    : $REVISION"
+
+          if [ "$PROVISION" != "Succeeded" ]; then
+            echo "Deployment did not reach Succeeded state."
+            exit 1
+          fi
+
+      # ── 3.4 Smoke-test the live URL ────────────────────────────────────────
+      - name: Get app URL
+        id: get-url
+        run: |
+          URL=$(az containerapp show \
+            --name "${{ vars.AZURE_CONTAINERAPP_NAME }}" \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --query "properties.configuration.ingress.fqdn" -o tsv)
+          echo "url=https://${URL}" >> "$GITHUB_OUTPUT"
+          echo "App URL: https://${URL}"
+
+      - name: Smoke-test /health on live deployment
+        run: |
+          URL="${{ steps.get-url.outputs.url }}"
+          echo "Checking ${URL}/health ..."
+          for i in 1 2 3 4 5; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${URL}/health")
+            if [ "$STATUS" = "200" ]; then
+              echo "Health check passed (attempt $i)"
+              exit 0
+            fi
+            echo "Attempt $i: HTTP $STATUS — retrying in 10s..."
+            sleep 10
+          done
+          echo "Health check failed after 5 attempts"
+          exit 1
+
+      # ── 3.5 Deployment summary ─────────────────────────────────────────────
+      - name: Write deployment summary
+        if: always()
+        run: |
+          echo "### Deployment summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| App | \`${{ vars.AZURE_CONTAINERAPP_NAME }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Resource Group | \`${{ vars.AZURE_RESOURCE_GROUP }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Commit | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| URL | ${{ steps.get-url.outputs.url }} |" >> $GITHUB_STEP_SUMMARY

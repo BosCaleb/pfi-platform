@@ -1,12 +1,55 @@
+# ── Version control ────────────────────────────────────────────────────────
 .git
+.gitignore
+.gitattributes
+
+# ── CI / GitHub Actions ─────────────────────────────────────────────────────
+.github
+
+# ── Python environments ─────────────────────────────────────────────────────
 .venv
 .venv312
 __pycache__/
 *.pyc
 *.pyo
+*.pyd
+*.pdb
+
+# ── Test / analysis artefacts ───────────────────────────────────────────────
+tests/
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# ── Data (never bake the DB into the image) ──────────────────────────────────
 *.db
 *.db.wal
 *.duckdb
 data/
+
+# ── Frontend build deps (Stage 1 handles its own install) ───────────────────
 frontend/node_modules/
 frontend/dist/
+frontend/.vite/
+
+# ── Docs ────────────────────────────────────────────────────────────────────
+docs/
+*.md
+!README.md
+
+# ── Local config / secrets ──────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── nginx (only needed for local Docker Compose; not used in Azure) ─────────
+nginx/
+
+# ── IDE / OS artefacts ──────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.DS_Store
+Thumbs.db

@@ -347,14 +347,67 @@ app.include_router(member_self_service.router)
 # Static SPA                                                           #
 # ------------------------------------------------------------------ #
 
-app.mount("/ui",     StaticFiles(directory="app/static", html=True), name="ui")
-# Member portal served at /portal — same SPA build, JS detects URL and renders portal view
-app.mount("/portal", StaticFiles(directory="app/static", html=True), name="portal")
+# Guard: the static directory only exists after the frontend build.
+# Tests run without a frontend build, so skip the mount to avoid
+# a RuntimeError from StaticFiles.
+_STATIC_DIR = "app/static"
+if os.path.isdir(_STATIC_DIR):
+    app.mount("/ui",     StaticFiles(directory=_STATIC_DIR, html=True), name="ui")
+    # Member portal served at /portal — same SPA build, JS detects URL
+    # and renders <MemberPortalApp /> instead of the admin shell.
+    app.mount("/portal", StaticFiles(directory=_STATIC_DIR, html=True), name="portal")
+else:
+    logger.warning(
+        "app/static not found — /ui and /portal will not be served. "
+        "Run `cd frontend && npm run build` to generate the static assets."
+    )
 
 
 # ------------------------------------------------------------------ #
 # Health / root                                                        #
 # ------------------------------------------------------------------ #
+
+
+@app.get("/health", tags=["health"])
+def health() -> dict:
+    """Liveness / readiness probe.
+
+    Used by:
+    - Docker HEALTHCHECK instruction
+    - Azure Container Apps liveness and readiness probes
+
+    Returns HTTP 200 while the process is alive and the database is
+    reachable.  Returns HTTP 503 if the database check fails so that
+    the container orchestrator can restart the instance.
+    """
+    import time
+
+    from fastapi import Response
+    from fastapi.responses import JSONResponse
+    from sqlalchemy import text
+
+    start = time.monotonic()
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        db_ok = True
+        db_msg = "ok"
+    except Exception as exc:  # noqa: BLE001
+        db_ok = False
+        db_msg = str(exc)[:120]
+        logger.error("Health check — database unreachable: %s", exc)
+
+    elapsed_ms = round((time.monotonic() - start) * 1000, 1)
+
+    payload = {
+        "status": "ok" if db_ok else "degraded",
+        "database": db_msg,
+        "latency_ms": elapsed_ms,
+        "service": "PFI Platform",
+    }
+
+    status_code = 200 if db_ok else 503
+    return JSONResponse(content=payload, status_code=status_code)
 
 
 @app.get("/", tags=["health"])
@@ -363,7 +416,10 @@ def root() -> dict:
     return {
         "service": "Personalised Fitness Intelligence Platform API",
         "short_name": "PFI Platform",
+        "version": "1.0.0",
         "docs": "/docs",
         "redoc": "/redoc",
         "ui": "/ui",
+        "portal": "/portal",
+        "health": "/health",
     }

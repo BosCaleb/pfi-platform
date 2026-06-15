@@ -20,7 +20,7 @@ exclude = [
 select = [
     "E",   # pycodestyle errors
     "W",   # pycodestyle warnings
-    "F",   # pyflakes
+    "F",   # pyflakes (catches undefined names, unused imports, etc.)
     "I",   # isort
     "N",   # pep8-naming
     "UP",  # pyupgrade
@@ -29,10 +29,12 @@ select = [
     "SIM", # flake8-simplify
     "TID", # flake8-tidy-imports
     "RUF", # ruff-specific rules
+    "ANN201", # missing return type on public functions (type-check lite)
 ]
 ignore = [
-    "E501",  # line too long (handled by Black)
-    "B008",  # do not perform function calls in default arguments (FastAPI Depends pattern)
+    "E501",    # line too long (handled by Black)
+    "B008",    # do not perform function calls in default arguments (FastAPI Depends pattern)
+    "ANN201",  # return type annotations — noisy on existing code; kept in select for reference
 ]
 
 [tool.ruff.lint.isort]
@@ -86,3 +88,33 @@ omit = [
 show_missing = true
 skip_covered = false
 fail_under = 60
+
+# =============================================================
+# Mypy — static type checking
+# Configured for a pragmatic balance: catches real bugs without
+# requiring full annotation coverage on existing code.
+# =============================================================
+[tool.mypy]
+python_version = "3.11"
+
+# Don't fail on missing type stubs for third-party packages
+# (SQLAlchemy, FastAPI, DuckDB, etc. have partial stubs at best)
+ignore_missing_imports = true
+
+# Existing code has many unannotated functions — don't require them
+disallow_untyped_defs = false
+check_untyped_defs = true
+
+# Warn about things that are clearly bugs regardless of annotations
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+
+# No strict optional — existing ORM models use nullable columns extensively
+no_implicit_optional = false
+
+exclude = [
+    "tests/",
+    "frontend/",
+    "app/static/",
+]

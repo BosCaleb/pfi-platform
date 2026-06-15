@@ -1,0 +1,133 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Azure Container Apps — PFI Platform
+#
+# This file documents the target Container App configuration.
+# It is used as a reference for the initial `az containerapp create` command
+# in docs/azure-setup.md, and can also be applied directly with:
+#
+#   az containerapp create \
+#     --resource-group pfi-rg \
+#     --yaml azure/containerapp.yaml
+#
+# BEFORE applying:
+#   1. Replace every <PLACEHOLDER> with your actual values.
+#   2. Create the Azure Files storage account and file share (see docs/azure-setup.md).
+#   3. Create the Container Apps storage reference (az containerapp env storage set).
+#   4. Set the secrets via Azure Portal or az containerapp secret set (not this file).
+#
+# Scale policy — IMPORTANT:
+#   DuckDB is a single-writer, file-based database.
+#   minReplicas and maxReplicas must both be 1.
+#   Horizontal scaling will corrupt the DuckDB file.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: pfi-platform
+
+location: <YOUR_AZURE_REGION>        # e.g. eastus, westeurope, southafricanorth
+
+properties:
+  environmentId: /subscriptions/<SUBSCRIPTION_ID>/resourceGroups/<RESOURCE_GROUP>/providers/Microsoft.App/managedEnvironments/<ENVIRONMENT_NAME>
+
+  configuration:
+
+    ingress:
+      external: true          # Expose to the internet
+      targetPort: 8000        # uvicorn listens on 8000
+      transport: auto         # HTTP/1.1 + HTTP/2
+      allowInsecure: false    # Force HTTPS (Azure provides the cert)
+
+    secrets:
+      - name: secret-key
+        value: "<YOUR_SECRET_KEY>"        # min 32 random characters
+      - name: admin-email
+        value: "<YOUR_ADMIN_EMAIL>"
+      - name: admin-password
+        value: "<YOUR_ADMIN_PASSWORD>"
+
+    registries: []            # Docker Hub is public — no registry auth needed
+                              # If you use a private registry, add credentials here
+
+  template:
+
+    containers:
+      - name: pfi-platform
+        image: <DOCKERHUB_USERNAME>/pfi-platform:latest
+
+        resources:
+          cpu: 0.5            # vCPU — sufficient for a single-trainer gym
+          memory: 1Gi         # DuckDB + uvicorn + React assets
+
+        env:
+          # ── Application settings ──────────────────────────────────────────
+          - name: DATABASE_URL
+            value: "duckdb:////data/pfi.db"   # /data is the Azure Files mount
+
+          - name: SECRET_KEY
+            secretRef: secret-key
+
+          - name: ALLOW_ADMIN_SEED
+            value: "true"                     # Set to "false" after first login
+
+          - name: DEFAULT_ADMIN_EMAIL
+            secretRef: admin-email
+
+          - name: DEFAULT_ADMIN_PASSWORD
+            secretRef: admin-password
+
+          - name: LOG_LEVEL
+            value: "info"
+
+          - name: CORS_ORIGINS
+            value: "https://<YOUR_APP_FQDN>"  # Set after first deploy
+
+          - name: ENV
+            value: "production"
+
+          - name: PYTHONUNBUFFERED
+            value: "1"
+
+        # ── Health probes ─────────────────────────────────────────────────
+        probes:
+          - type: Liveness
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            failureThreshold: 3
+            timeoutSeconds: 10
+
+          - type: Readiness
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            failureThreshold: 3
+            timeoutSeconds: 10
+
+          - type: Startup
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 12          # Allow up to 120 s for cold start
+            timeoutSeconds: 10
+
+        volumeMounts:
+          - volumeName: pfi-data
+            mountPath: /data              # DuckDB writes to /data/pfi.db
+
+    volumes:
+      - name: pfi-data
+        storageType: AzureFile
+        storageName: pfi-storage          # Name given when running:
+                                          # az containerapp env storage set ...
+
+    scale:
+      # ── CRITICAL: keep both at 1 ─────────────────────────────────────────
+      # DuckDB does not support concurrent writers.
+      # Multiple replicas will corrupt the database file.
+      minReplicas: 1
+      maxReplicas: 1

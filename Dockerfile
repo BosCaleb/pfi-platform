@@ -47,7 +47,7 @@ COPY --from=frontend-build /build/app/static ./app/static
 # ── DuckDB data directory ───────────────────────────────────────────────────
 # In production this path is replaced by an Azure Files volume mount.
 # The directory is created here as a fallback for local Docker Compose usage.
-RUN mkdir -p /data
+RUN mkdir -p /app/data && chmod 777 /app/data
 
 # ── Environment defaults ────────────────────────────────────────────────────
 # All of these can be overridden by container environment variables.
